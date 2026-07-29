@@ -13,3 +13,5 @@
 /home/cooperp/projects/Zoho-Ticket-Controller/src/main/java/com/anticipate/listr/jwt_handling/services/AuthenticationService.java
 /home/cooperp/projects/Zoho-Ticket-Controller/src/main/java/com/anticipate/listr/jwt_handling/services/JwtService.java
 /home/cooperp/projects/Zoho-Ticket-Controller/src/main/java/com/anticipate/listr/jwt_handling/services/UserService.java
+/home/cooperp/projects/Zoho-Ticket-Controller/src/main/java/com/anticipate/listr/zoho_client/controllers/ZohoClientController.java
+/home/cooperp/projects/Zoho-Ticket-Controller/src/main/java/com/anticipate/listr/zoho_client/services/ZohoClientService.java
