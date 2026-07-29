@@ -25,8 +25,12 @@ public class ZohoClientController {
 
     @GetMapping("/me")
     public String getExample() {
-        
         return zohoClientService.getExample();
+    }
+
+    @GetMapping("/too")
+    public String getTest() {
+        return "This is a test";
     }
 
     @GetMapping("/zoho-access-token")
