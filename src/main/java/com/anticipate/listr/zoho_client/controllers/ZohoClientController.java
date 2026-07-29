@@ -18,9 +18,9 @@ public class ZohoClientController {
     private final UserService userService;
     private final ZohoClientService zohoClientService;
 
-    public ZohoClientController(UserService userService) {
+    public ZohoClientController(UserService userService, ZohoClientService zohoClientService) {
         this.userService = userService;
-        this.zohoClientService = new ZohoClientService();
+        this.zohoClientService = zohoClientService;
     }
 
     @GetMapping("/me")
