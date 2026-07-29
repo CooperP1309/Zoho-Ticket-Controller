@@ -1,0 +1,4 @@
+===== TODO =====
+
+ - Add dynamic Zoho API credentials to setup script
+ - Add setup script validation to Zoho API credentials entry
