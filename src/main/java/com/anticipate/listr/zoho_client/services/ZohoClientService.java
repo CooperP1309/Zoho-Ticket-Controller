@@ -40,11 +40,17 @@ public class ZohoClientService {
 
     public String getZohoAccessToken() {
 
-        return restClient.post()
+        String result =  
+                
+                restClient.post()
                 .uri(tokenHost + "/oauth/v2/token")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(preTokenBody)
                 .retrieve()
                 .body(String.class);
+
+        // TO DO: Deserialize the result into a proper object and return the access token
+
+        return "RESULT FROM ZOHO: " + result;
     }
 }
