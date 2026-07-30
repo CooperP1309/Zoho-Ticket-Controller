@@ -1,6 +1,6 @@
 package com.anticipate.listr.zoho_client.services;
 
-import com.anticipate.listr.zoho_client.entities.ZohoAccessToken;
+import com.anticipate.listr.zoho_client.entities.ZohoAuthHeader;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,8 @@ public class ZohoClientService {
 
     private final String tokenHost;
 
+    ZohoAuthHeader zohoAuthHeader;
+
     // Constructor preceeds @Value injection - Hence the constructor injection
     public ZohoClientService(
             @Value("${zoho.client.id}") String clientId,
@@ -28,8 +30,10 @@ public class ZohoClientService {
                             "&client_secret=" + clientSecret + 
                             "&scope=Desk.tickets.READ&soid=Desk.tickets.READ";
 
-
         this.tokenHost = tokenHost;
+
+        this.zohoAuthHeader = new ZohoAuthHeader();
+        this.zohoAuthHeader.setZsoid(zsoid);
     }
 
     public String getExample() {
@@ -41,15 +45,20 @@ public class ZohoClientService {
 
     public String getZohoAccessToken() {
 
-        ZohoAccessToken result =  
+        ZohoAuthHeader tokenResponse =  
                 
                 restClient.post()
                 .uri(tokenHost + "/oauth/v2/token")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(preTokenBody)
                 .retrieve()
-                .body(ZohoAccessToken.class);
+                .body(ZohoAuthHeader.class);
 
-        return "RESULT AS STORED IN TOKEN CLASS: " + result.getAccessToken();
+        // access token assigned seperately to not overwrite the zsoid written in constructor
+        this.zohoAuthHeader.setAccessToken(tokenResponse.getAccessToken());
+
+        return "RESULTING HEADERS FROM ZOHO AUTH CLASS:\n" +
+                this.zohoAuthHeader.getAuthHeader() + "\n" +
+                this.zohoAuthHeader.getOrgIdHeader();
     }
 }
