@@ -1,5 +1,6 @@
 package com.anticipate.listr.zoho_client.services;
 
+import com.anticipate.listr.zoho_client.entities.ZohoAccessToken;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -40,17 +41,15 @@ public class ZohoClientService {
 
     public String getZohoAccessToken() {
 
-        String result =  
+        ZohoAccessToken result =  
                 
                 restClient.post()
                 .uri(tokenHost + "/oauth/v2/token")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(preTokenBody)
                 .retrieve()
-                .body(String.class);
+                .body(ZohoAccessToken.class);
 
-        // TO DO: Deserialize the result into a proper object and return the access token
-
-        return "RESULT FROM ZOHO: " + result;
+        return "RESULT AS STORED IN TOKEN CLASS: " + result.getAccessToken();
     }
 }
