@@ -10,31 +10,36 @@ public class ZohoAuthHeader {
     @JsonProperty("access_token")
     private String access_token;
 
-    @JsonProperty("zsoid")
-    private String zsoid;
-
-    public String getAccessToken() {
-        return access_token;
-    }
-
-    public String getZsoid() {
-        return zsoid;
-    }
+    @JsonProperty("orgId")
+    private String orgId;
 
     public void setAccessToken(String access_token) {
         this.access_token = access_token;
     }
 
-    public void setZsoid(String zsoid) {
-        this.zsoid = zsoid;
+    public void setOrgId(String orgId) {
+        this.orgId = orgId;
     }
 
-    // http header getters
-    public String getAuthHeader() {
-        return "Authorization: Zoho-oauthtoken " + access_token;
+    public String getAccessToken() {
+        return access_token;
     }
 
-    public String getOrgIdHeader() {
-        return "orgId: " + zsoid;
+    // http header name/value pairs
+    // rest client api requires separate name and value
+    public String getAuthHeaderName() {
+        return "Authorization";
+    }
+
+    public String getAuthHeaderValue() {
+        return "Zoho-oauthtoken " + access_token;
+    }
+
+    public String getOrgIdHeaderName() {
+        return "orgId";
+    }
+
+    public String getOrgIdHeaderValue() {
+        return orgId;
     }
 }

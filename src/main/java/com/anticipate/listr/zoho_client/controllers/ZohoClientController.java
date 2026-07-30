@@ -28,13 +28,18 @@ public class ZohoClientController {
         return zohoClientService.getExample();
     }
 
-    @GetMapping("/too")
-    public String getTest() {
-        return "This is a test";
-    }
-
-    @GetMapping("/zoho-access-token")
+    @GetMapping("/get-access-token")
     public String getZohoAccessToken() {
         return zohoClientService.getZohoAccessToken();
+    }
+
+    @GetMapping("/print-access-token")
+    public String printAccessToken() {
+        return zohoClientService.printZohoAccessToken();
+    }
+
+    @GetMapping("/use-access-token")
+    public String callZohoApi() {
+        return zohoClientService.useZohoAccessToken();
     }
 }
