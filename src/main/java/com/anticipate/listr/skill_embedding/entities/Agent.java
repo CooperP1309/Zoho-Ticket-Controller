@@ -16,6 +16,8 @@ public class Agent {
     @JsonProperty("skills")
     private String[] skills;
 
+    @JsonProperty("name")
+
     public String getName() {
         return name;
     }
