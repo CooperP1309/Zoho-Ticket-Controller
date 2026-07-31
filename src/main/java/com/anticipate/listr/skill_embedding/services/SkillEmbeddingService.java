@@ -49,7 +49,7 @@ public class SkillEmbeddingService {
             }
         }
 
-        System.out.println("\n\n");
+        System.out.println("\n\n DID WE GET EMBEDDINGS FROM THE ACTUAL LLM SERVER? \n\n");
 
         //System.out.println("\n\n\nSkillEmbeddingService initialized with " + agentList.length + " agents.\n\n\n");
         //System.out.println("Agent3: " + agentList[2].getName() + ", Zoho ID: " + agentList[2].getZohoId() + ", Skills: " + String.join(", ", agentList[2].getSkills()) + "\n\n\n");

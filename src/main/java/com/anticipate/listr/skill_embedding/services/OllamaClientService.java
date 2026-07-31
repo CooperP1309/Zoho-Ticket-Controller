@@ -1,5 +1,6 @@
 package com.anticipate.listr.skill_embedding.services;
 
+import com.anticipate.listr.skill_embedding.entities.Embeddings;
 import com.anticipate.listr.skill_embedding.entities.EmbeddedSkill; 
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,7 @@ public class OllamaClientService {
     }
 
     public float[] getEmbedding(String skill) {
+        /*
         Random random = new Random();
         float[] embedding = new float[768];
 
@@ -27,22 +29,29 @@ public class OllamaClientService {
         }
 
         return embedding;
-        /*
-        String url = "http://localhost:11434/embeddings";
-        String requestBody = "{\"model\": \"ollama/embedding-model\", \"input\": \"" + skill + "\"}";
-
-        try {
-            String response = restClient.post(url, requestBody, MediaType.APPLICATION_JSON);
-            // Assuming the response is a JSON object with an "embedding" field
-            ObjectMapper objectMapper = new ObjectMapper();
-            EmbeddedSkill embeddedSkill = objectMapper.readValue(response, EmbeddedSkill.class);
-            return embeddedSkill.getEmbedding();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to get embedding from Ollama API", e);
-        }
         */
+
+        /*
+        curl http://localhost:11434/api/embed -d '{
+            "model": "nomic-embed-text",
+            "input": "Your sample text goes here"
+        }'
+        */
+
+        /*
+            NOTE! Laptop couldn't run llm due to 4gb of ram ;(
+
+            For now, hardcoding ip of an ollama server... TODO: Change this
+         */
+        String ollamaURI = "http://192.168.1.124:11434/api/embed";
+        String requestBody = "{\"model\": \"nomic-embed-text\", \"input\": \"" + skill + "\"}";
+
+        return restClient.post()
+            .uri(ollamaURI)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(requestBody)
+            .retrieve()
+            .body(Embeddings.class)
+            .getEmbeddings()[0];
     }
-
-
-
 }
