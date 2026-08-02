@@ -1,7 +1,7 @@
-package com.anticipate.listr.skill_embedding.services;
+package com.anticipate.listr.embedding.services;
 
-import com.anticipate.listr.skill_embedding.entities.Embeddings;
-import com.anticipate.listr.skill_embedding.entities.EmbeddedSkill; 
+import com.anticipate.listr.embedding.entities.Embeddings;
+import com.anticipate.listr.embedding.entities.EmbeddedSkill; 
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

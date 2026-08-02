@@ -1,4 +1,4 @@
-package com.anticipate.listr.skill_embedding.entities;
+package com.anticipate.listr.embedding.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
