@@ -1,5 +1,6 @@
 package com.anticipate.listr.zoho_client.controllers;
 
+import com.anticipate.listr.zoho_client.entities.ZohoTicket;
 import com.anticipate.listr.zoho_client.services.ZohoClientService;
 import com.anticipate.listr.jwt_handling.entities.User;
 import com.anticipate.listr.jwt_handling.services.UserService;
@@ -41,5 +42,10 @@ public class ZohoClientController {
     @GetMapping("/use-access-token")
     public String callZohoApi() {
         return zohoClientService.useZohoAccessToken();
+    }
+
+    @GetMapping("/most-recent-ticket")
+    public ZohoTicket getMostRecentTicket() {
+        return zohoClientService.getMostRecentTicket();
     }
 }

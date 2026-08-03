@@ -1,6 +1,8 @@
 package com.anticipate.listr.zoho_client.services;
 
 import com.anticipate.listr.zoho_client.entities.ZohoAuthHeader;
+import com.anticipate.listr.zoho_client.entities.ZohoTicket;
+import com.anticipate.listr.zoho_client.entities.ZohoTicketListResponse;
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -74,5 +76,23 @@ public class ZohoClientService {
                 .header(this.zohoAuthHeader.getOrgIdHeaderName(), this.zohoAuthHeader.getOrgIdHeaderValue())
                 .retrieve()
                 .body(String.class);
+    }
+
+    public ZohoTicket getMostRecentTicket() {
+        ZohoTicketListResponse response =
+
+            restClient.get()
+                .uri("https://desk.zoho.com.au/api/v1/tickets?sortBy=-createdTime&limit=1")
+                .header(this.zohoAuthHeader.getAuthHeaderName(), this.zohoAuthHeader.getAuthHeaderValue())
+                .header(this.zohoAuthHeader.getOrgIdHeaderName(), this.zohoAuthHeader.getOrgIdHeaderValue())
+                .retrieve()
+                .body(ZohoTicketListResponse.class);
+
+        ZohoTicket ticket = response.getData().get(0);
+
+        System.out.println("\n\nMost recent ticket retrieved: " + ticket.getTicketNumber() + " - " + ticket.getSubject());
+        System.out.println("\nAssignee ID: " + ticket.getAssigneeId() + "\n\n");
+
+        return ticket;
     }
 }
