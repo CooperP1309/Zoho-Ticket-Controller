@@ -1,5 +1,6 @@
 package com.anticipate.listr.zoho_client.controllers;
 
+import com.anticipate.listr.embedding.services.OllamaClientService;
 import com.anticipate.listr.zoho_client.entities.ZohoTicket;
 import com.anticipate.listr.zoho_client.services.ZohoClientService;
 import com.anticipate.listr.jwt_handling.entities.User;
@@ -46,6 +47,17 @@ public class ZohoClientController {
 
     @GetMapping("/most-recent-ticket")
     public ZohoTicket getMostRecentTicket() {
-        return zohoClientService.getMostRecentTicket();
+        
+        ZohoTicket ticket = zohoClientService.getMostRecentTicket();
+        
+        // embed the ticket
+        OllamaClientService ollamaClientService = new OllamaClientService();
+        float[] embeddedDescription = ollamaClientService.getEmbedding(ticket.getSubject());
+        ticket.setEmbeddedDescription(embeddedDescription);
+
+        System.out.println("\n\n[Zoho Controller] Most recent ticket description: " + ticket.getSubject());
+        System.out.println("\n[Zoho Controller] Embedded description: " + java.util.Arrays.toString(ticket.getEmbeddedDescription()) + "\n\n");
+
+        return ticket;
     }
 }

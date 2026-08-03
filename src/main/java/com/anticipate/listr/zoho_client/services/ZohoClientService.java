@@ -90,8 +90,8 @@ public class ZohoClientService {
 
         ZohoTicket ticket = response.getData().get(0);
 
-        System.out.println("\n\nMost recent ticket retrieved: " + ticket.getTicketNumber() + " - " + ticket.getSubject());
-        System.out.println("\nAssignee ID: " + ticket.getAssigneeId() + "\n\n");
+        //System.out.println("\n\nMost recent ticket retrieved: " + ticket.getTicketNumber() + " - " + ticket.getSubject());
+        //System.out.println("\nAssignee ID: " + ticket.getAssigneeId() + "\n\n");
 
         return ticket;
     }

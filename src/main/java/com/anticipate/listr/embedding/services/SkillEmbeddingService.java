@@ -53,9 +53,5 @@ public class SkillEmbeddingService {
 
         //System.out.println("\n\n\nSkillEmbeddingService initialized with " + agentList.length + " agents.\n\n\n");
         //System.out.println("Agent3: " + agentList[2].getName() + ", Zoho ID: " + agentList[2].getZohoId() + ", Skills: " + String.join(", ", agentList[2].getSkills()) + "\n\n\n");
-
-        // Build embedddings
-
     }
-
 }
