@@ -115,4 +115,21 @@ public class SkillEmbeddingService {
 
         return dotProduct / (float) (Math.sqrt(normTicket) * Math.sqrt(normSkill));        
     }
+
+    /*
+    *   Retrieves the name of an agent based on their Zoho ID.
+    *
+    *   agentId: The Zoho ID of the agent whose name is to be retrieved.
+    *   returns: The name of the agent if found; otherwise, returns null.
+    * 
+    *   TODO: Modify getSimilarityAgentId so we can delete this stupid function
+    */
+    public String getNameFromAgentId(int agentId) {
+        for (Agent agent : agentList) {
+            if (agent.getZohoId() == agentId) {
+                return agent.getName();
+            }
+        }
+        return null;
+    }
 }

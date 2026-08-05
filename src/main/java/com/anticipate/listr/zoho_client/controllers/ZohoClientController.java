@@ -116,6 +116,7 @@ public class ZohoClientController {
 
         model.addAttribute("ticket", ticket);
         model.addAttribute("agentId", agentId);
+        model.addAttribute("agentName", skillEmbeddingService.getNameFromAgentId(agentId));
 
         return "test-page";
     }

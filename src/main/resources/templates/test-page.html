@@ -3,68 +3,209 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${pageTitle}">Fallback Page Title</title>
-    <!-- 2. Linking internal CSS files dynamically -->
-    <link rel="stylesheet" th:href="@{/css/main.css}" href="../static/css/main.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Zoho Ticket Controller</title>
+    <style>
+        :root {
+            --bg: #0f1115;
+            --panel: #161922;
+            --border: #262b38;
+            --text: #e4e7ec;
+            --muted: #8b93a7;
+            --accent: #4f8cff;
+            --ok: #3ecf8e;
+            --fail: #ff5c5c;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 2.5rem 1.5rem;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", ui-monospace, Consolas, monospace;
+            display: flex;
+            justify-content: center;
+        }
+
+        .wrap {
+            width: 100%;
+            max-width: 640px;
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0 0 0.25rem;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin: 0 0 2rem;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel h3 {
+            margin: 0 0 1rem;
+            font-size: 1rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .admin-tag {
+            display: inline-block;
+            background: rgba(79, 140, 255, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(79, 140, 255, 0.35);
+            padding: 0.35rem 0.7rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        form {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        label {
+            display: none;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        button {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.6rem 1.1rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-row span:first-child {
+            color: var(--muted);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.3rem 0.7rem;
+            border-radius: 999px;
+            margin-bottom: 1rem;
+        }
+
+        .status-badge.ok {
+            background: rgba(62, 207, 142, 0.12);
+            color: var(--ok);
+            border: 1px solid rgba(62, 207, 142, 0.35);
+        }
+
+        .status-badge.fail {
+            background: rgba(255, 92, 92, 0.12);
+            color: var(--fail);
+            border: 1px solid rgba(255, 92, 92, 0.35);
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+    </style>
 </head>
 <body>
+    <div class="wrap">
+        <header>
+            <!-- 2. th:text completely replaces the fallback tag content -->
+            <h1 th:text="${welcomeMessage}">Welcome, Guest!</h1>
+            <p class="subtitle">Zoho Ticket Controller &mdash; agent routing test console</p>
+        </header>
 
-    <header>
-        <!-- 3. th:text completely replaces the fallback tag content -->
-        <h1 th:text="${welcomeMessage}">Welcome, Guest!</h1>
-    </header>
+        <main>
+            <!-- 3. Conditional rendering (evaluates boolean conditions) -->
+            <div class="admin-tag" th:if="${userRole == 'ADMIN'}">Admin Control Panel Activated</div>
 
-    <main>
-        <!-- 4. Conditional rendering (evaluates boolean conditions) -->
-        <div th:if="${userRole == 'ADMIN'}">
-            <p>Admin Control Panel Activated.</p>
-        </div>
+            <!-- 4. Form Handling and Data Binding -->
+            <div class="panel">
+                <h3>Submit Test Ticket</h3>
+                <form th:action="@{/zoho/test-page}" th:object="${ticket}" method="post">
+                    <label for="subject">Ticket Subject</label>
+                    <!-- th:field binds inputs to the Java object property -->
+                    <input type="text" id="subject" th:field="*{subject}" placeholder="e.g. Cannot access shared drive" />
+                    <button type="submit">Send</button>
+                </form>
+            </div>
 
-        <!-- 5. Iterating through lists or collections -->
-        <h3>Product Catalog</h3>
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>Product Name</th>
-                    <th>Price</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Loops over 'products' collection; creates 'prod' local variable -->
-                <tr th:each="prod : ${products}">
-                    <td th:text="${prod.name}">Sample Item</td>
-                    <td th:text="${prod.price}">$0.00</td>
-                </tr>
-                <!-- Renders if the product list is completely empty -->
-                <tr th:if="${#lists.isEmpty(products)}">
-                    <td colspan="2">No inventory available.</td>
-                </tr>
-            </tbody>
-        </table>
+            <div class="panel" th:if="${agentId != null}">
+                <h3>Routing Result</h3>
 
-        <!-- 6. Form Handling and Data Binding -->
-        <h3>Submit Test Ticket</h3>
-        <form th:action="@{/zoho/test-page}" th:object="${ticket}" method="post">
-            <label for="subject">Ticket Subject:</label>
-            <!-- th:field binds inputs to the Java object property -->
-            <input type="text" id="subject" th:field="*{subject}" />
-            <button type="submit">Send</button>
-        </form>
+                <div class="status-badge fail" th:if="${agentId == -1}">
+                    <span class="dot"></span> No suitable agent found
+                </div>
 
-        <div th:if="${agentId != null}">
-            <p th:if="${agentId == -1}">No suitable agent found for the ticket.</p>
-            <p th:if="${agentId != -1}">Most suitable agent ID: <span th:text="${agentId}">0</span></p>
-        </div>
-
-        <!-- 7. Dynamic Links with URL Parameters -->
-        <p>
-            <a th:href="@{/profile(id=${userId})}">View User Profile</a>
-        </p>
-    </main>
-
-    <footer>
-        <p>&copy; 2026 Thymeleaf Application Context</p>
-    </footer>
-
+                <div th:if="${agentId != -1}">
+                    <div class="status-badge ok">
+                        <span class="dot"></span> Match found
+                    </div>
+                    <div class="result-row">
+                        <span>Agent ID</span>
+                        <span th:text="${agentId}">0</span>
+                    </div>
+                    <div class="result-row" th:if="${agentName != null}">
+                        <span>Agent Name</span>
+                        <span th:text="${agentName}">N/A</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 </body>
 </html>
