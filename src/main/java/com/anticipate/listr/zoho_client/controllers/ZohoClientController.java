@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import java.util.List;
 
 /* local modules */
+import com.anticipate.listr.embedding.entities.AgentRanking;
 import com.anticipate.listr.embedding.services.SkillEmbeddingService;
 import com.anticipate.listr.embedding.services.OllamaClientService;
 import com.anticipate.listr.zoho_client.entities.ZohoTicket;
@@ -111,6 +112,21 @@ public class ZohoClientController {
         ticket.setTicketNumber("56789");
         ticket.setAssigneeId("101112");
 
+        List<AgentRanking> agentRankings = skillEmbeddingService.getSimilarityAgentRanking(ticket.getSubject());
+        System.out.println("[Zoho Controller] Most suitable agent ID for the ticket: " + agentRankings.get(0).getZohoId() + "\n");
+
+        model.addAttribute("ticket", ticket);
+        model.addAttribute("agentRankings", agentRankings);
+
+        return "test-page";
+    }    
+    /*
+    public String submitTestTicket(@ModelAttribute ZohoTicket ticket, Model model) {
+        
+        ticket.setId("1234");
+        ticket.setTicketNumber("56789");
+        ticket.setAssigneeId("101112");
+
         int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
         System.out.println("[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n");
 
@@ -120,6 +136,7 @@ public class ZohoClientController {
 
         return "test-page";
     }
+    */
 
     @GetMapping("/sort-test-ticket")
     @ResponseBody

@@ -130,6 +130,42 @@
             color: var(--muted);
         }
 
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .ranking-table th {
+            text-align: left;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0 0 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .ranking-table td {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .ranking-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .ranking-table td:last-child,
+        .ranking-table th:last-child {
+            text-align: right;
+        }
+
+        .ranking-table tr:first-child td {
+            color: var(--text);
+            font-weight: 600;
+        }
+
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -184,25 +220,35 @@
                 </form>
             </div>
 
-            <div class="panel" th:if="${agentId != null}">
+            <div class="panel" th:if="${agentRankings != null}">
                 <h3>Routing Result</h3>
 
-                <div class="status-badge fail" th:if="${agentId == -1}">
+                <div class="status-badge fail" th:if="${agentRankings.isEmpty()}">
                     <span class="dot"></span> No suitable agent found
                 </div>
 
-                <div th:if="${agentId != -1}">
+                <div th:if="${!agentRankings.isEmpty()}">
                     <div class="status-badge ok">
-                        <span class="dot"></span> Match found
+                        <span class="dot"></span> <span th:text="${agentRankings.size()}">0</span> agents ranked
                     </div>
-                    <div class="result-row">
-                        <span>Agent ID</span>
-                        <span th:text="${agentId}">0</span>
-                    </div>
-                    <div class="result-row" th:if="${agentName != null}">
-                        <span>Agent Name</span>
-                        <span th:text="${agentName}">N/A</span>
-                    </div>
+                    <table class="ranking-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Agent</th>
+                                <th>ID</th>
+                                <th>Similarity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="ranking, iter : ${agentRankings}">
+                                <td th:text="${iter.count}">1</td>
+                                <td th:text="${ranking.name}">Agent Name</td>
+                                <td th:text="${ranking.zohoId}">0</td>
+                                <td th:text="${#numbers.formatDecimal(ranking.similarityScore, 1, 3)}">0.000</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </main>

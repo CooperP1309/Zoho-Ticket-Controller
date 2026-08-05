@@ -11,8 +11,10 @@ import tools.jackson.databind.ObjectMapper;
 /* java modules */
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 /* local modules */
+import com.anticipate.listr.embedding.entities.AgentRanking;
 import com.anticipate.listr.embedding.entities.EmbeddedSkill;
 import com.anticipate.listr.embedding.entities.Agent; 
 
@@ -84,6 +86,44 @@ public class SkillEmbeddingService {
         System.out.println("[SkillEmbeddingService] Best agent ID for ticket subject '" + ticketSubject + "' is: " + bestAgentId + " with similarity: " + bestSimilarity);
 
         return bestAgentId;
+    }
+
+    /*
+    *   Finds the best agent for a given ticket subject based on skill embeddings.
+    *
+    *   Returns agent ranking objects with name, zoho_id, similarity_score, and number_of_tickets.
+    */
+    public List<AgentRanking> getSimilarityAgentRanking(String ticketSubject) {
+
+        // vectorize the ticket subject
+        float[] ticketEmbedding = ollamaClientService.getEmbedding(ticketSubject);
+
+        int bestAgentId = -1;
+        float bestSimilarity = -1.0f;
+        List<AgentRanking> agentRankings = new ArrayList<>();
+
+        // compile the similarity scores of each agent into a list
+        for (EmbeddedSkill embeddedSkill : embeddedSkills) {
+            float similarity = cosineSimilarity(ticketEmbedding, embeddedSkill.getEmbedding());
+            
+            AgentRanking agentRanking = new AgentRanking();
+            agentRanking.setZohoId(Integer.valueOf(embeddedSkill.getZohoId()));
+            agentRanking.setSimilarityScore((double) similarity);
+            agentRanking.setName(getNameFromAgentId(agentRanking.getZohoId()));
+            agentRankings.add(agentRanking);
+            
+            /*
+            if (similarity > bestSimilarity) {
+                bestSimilarity = similarity;
+                bestAgentId = Integer.valueOf(embeddedSkill.getZohoId());
+            }
+            */
+        }
+
+        agentRankings.sort(Comparator.comparingDouble(AgentRanking::getSimilarityScore).reversed());
+        System.out.println("[SkillEmbeddingService] Best agent ID for ticket subject '" + ticketSubject + "' is: " + agentRankings.get(0).getZohoId() + " with similarity: " + agentRankings.get(0).getSimilarityScore());
+
+        return agentRankings;
     }
 
     /*
