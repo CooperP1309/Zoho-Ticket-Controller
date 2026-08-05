@@ -50,13 +50,13 @@ public class ZohoClientController {
         
         ZohoTicket ticket = zohoClientService.getMostRecentTicket();
         
-        // embed the ticket
-        OllamaClientService ollamaClientService = new OllamaClientService();
-        float[] embeddedDescription = ollamaClientService.getEmbedding(ticket.getSubject());
-        ticket.setEmbeddedDescription(embeddedDescription);
-
-        System.out.println("\n\n[Zoho Controller] Most recent ticket description: " + ticket.getSubject());
-        System.out.println("\n[Zoho Controller] Embedded description: " + java.util.Arrays.toString(ticket.getEmbeddedDescription()) + "\n\n");
+        // embed the ticket - OLD: ZohoClientController SHOULD NOT BE RESPONSIBLE FOR EMBEDDING
+        //OllamaClientService ollamaClientService = new OllamaClientService();
+        //float[] embeddedDescription = ollamaClientService.getEmbedding(ticket.getSubject());
+        //ticket.setEmbeddedDescription(embeddedDescription);
+        //System.out.println("\n[Zoho Controller] Embedded description: " + java.util.Arrays.toString(ticket.getEmbeddedDescription()) + "\n\n");
+        
+        System.out.println("\n\n[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n\n");
 
         return ticket;
     }

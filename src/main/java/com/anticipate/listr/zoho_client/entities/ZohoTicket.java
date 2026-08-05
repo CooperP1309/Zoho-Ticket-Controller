@@ -19,8 +19,6 @@ public class ZohoTicket {
     @JsonProperty("assigneeId")
     private String assigneeId;
 
-    private float[] embeddedDescription;
-
     public String getId() {
         return id;
     }
@@ -51,13 +49,5 @@ public class ZohoTicket {
 
     public void setAssigneeId(String assigneeId) {
         this.assigneeId = assigneeId;
-    }
-
-    public float[] getEmbeddedDescription() {
-        return embeddedDescription;
-    }
-
-    public void setEmbeddedDescription(float[] embeddedDescription) {
-        this.embeddedDescription = embeddedDescription;
     }
 }
