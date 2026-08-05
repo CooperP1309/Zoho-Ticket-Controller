@@ -1,0 +1,27 @@
+Expect to return agent 12:
+
+- My messages keep bouncing
+
+
+Expect to return agent 13:
+
+- Getting paper jam error
+
+
+Expect to return agent 14:
+
+- Files not syncing to cloud
+
+
+Expect to return agent 15:
+
+- Can't connect to office Wi-Fi
+
+- Computer keeps restarting
+
+
+Expect to return agent 16:
+
+- Keep getting malware warnings
+
+- App blocked by defender

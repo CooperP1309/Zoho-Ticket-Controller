@@ -2,17 +2,17 @@
   {
     "name": "Emily",
     "zoho_id": 12,
-    "skills": ["DNS", "Websites"]
+    "skills": ["Domain Names", "Websites", "Emails"]
   },
   {
     "name": "Morgan",
     "zoho_id": 13,
-    "skills": ["PowerShell", "Printers"]
+    "skills": ["Printers", "Scanning", "Zoho"]
   },
   {
     "name": "Brian",
     "zoho_id": 14,
-    "skills": ["OneDrive", "Sharepoint"]
+    "skills": ["OneDrive", "Sharepoint", "Cloud Storage"]
   },
   {
     "name": "Chris",
@@ -22,6 +22,6 @@
   {
     "name": "Adrian",
     "zoho_id": 16,
-    "skills": ["Cybersecurity", "Powershell"]
+    "skills": ["Cybersecurity", "Auditing"]
   }
 ]

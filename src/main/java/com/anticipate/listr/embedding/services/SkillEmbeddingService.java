@@ -54,4 +54,49 @@ public class SkillEmbeddingService {
         //System.out.println("\n\n\nSkillEmbeddingService initialized with " + agentList.length + " agents.\n\n\n");
         //System.out.println("Agent3: " + agentList[2].getName() + ", Zoho ID: " + agentList[2].getZohoId() + ", Skills: " + String.join(", ", agentList[2].getSkills()) + "\n\n\n");
     }
+
+    public int getSimilarityAgentId(String ticketSubject) {
+
+        // vectorize the ticket subject
+        float[] ticketEmbedding = ollamaClientService.getEmbedding(ticketSubject);
+
+        int bestAgentId = -1;
+        float bestSimilarity = -1.0f;
+
+        // run similarity search against the embedded skills
+        for (EmbeddedSkill embeddedSkill : embeddedSkills) {
+            float similarity = cosineSimilarity(ticketEmbedding, embeddedSkill.getEmbedding());
+            if (similarity > bestSimilarity) {
+                bestSimilarity = similarity;
+                bestAgentId = Integer.valueOf(embeddedSkill.getZohoId());
+            }
+        }
+
+        System.out.println("\n\n[SkillEmbeddingService] Best agent ID for ticket subject '" + ticketSubject + "' is: " + bestAgentId + " with similarity: " + bestSimilarity + "\n\n");
+
+        return bestAgentId;
+    }
+
+    private static float cosineSimilarity(float[] ticketVector, float[] skillVector) {
+    
+        if (ticketVector.length != skillVector.length) {
+            throw new IllegalArgumentException("Vectors must be of the same length");
+        }
+
+        float dotProduct = 0.0f;
+        float normTicket = 0.0f;
+        float normSkill = 0.0f;
+
+        for (int i = 0; i < ticketVector.length; i++) {
+            dotProduct += ticketVector[i] * skillVector[i];
+            normTicket += ticketVector[i] * ticketVector[i];
+            normSkill += skillVector[i] * skillVector[i];
+        }
+
+        if (normTicket == 0.0f || normSkill == 0.0f) {
+            return 0.0f;
+        }
+
+        return dotProduct / (float) (Math.sqrt(normTicket) * Math.sqrt(normSkill));        
+    }
 }
