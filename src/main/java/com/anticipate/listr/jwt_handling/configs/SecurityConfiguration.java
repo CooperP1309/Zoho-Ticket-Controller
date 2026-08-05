@@ -33,7 +33,7 @@ public class SecurityConfiguration {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**","/test/**").permitAll()
+                .requestMatchers("/auth/**","/zoho/**").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

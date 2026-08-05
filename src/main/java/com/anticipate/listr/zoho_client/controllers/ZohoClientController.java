@@ -9,14 +9,19 @@ import com.anticipate.listr.jwt_handling.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
+//import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
 
 import java.util.List;
 
-@RequestMapping("/test")
-@RestController
+@RequestMapping("/zoho")
+@Controller
 public class ZohoClientController {
     private final UserService userService;
     private final ZohoClientService zohoClientService;
@@ -28,272 +33,136 @@ public class ZohoClientController {
         this.skillEmbeddingService = skillEmbeddingService;
     }
 
-    @GetMapping("/me")
-    public String getExample() {
-        return zohoClientService.getExample();
-    }
+
+
+    /*----- access token debugging -----*/
 
     @GetMapping("/get-access-token")
+    @ResponseBody
+    /*
+    *   Gets an access token
+    *
+    *   Uses Zoho Client Service to fetch an access token
+    *   from Zoho Desk. The token returned from this
+    *   endpoint is only scoped to the Zoho Desk API.
+    */
     public String getZohoAccessToken() {
         return zohoClientService.getZohoAccessToken();
     }
 
     @GetMapping("/print-access-token")
+    @ResponseBody
+    /*
+    *   Prints the access token
+    *
+    *   Prints the retrieved access token to console as
+    *   well as returns it to the user in HTTP response.
+    */
     public String printAccessToken() {
         return zohoClientService.printZohoAccessToken();
     }
 
-    @GetMapping("/use-access-token")
-    public String callZohoApi() {
+    @GetMapping("/test-access-token")
+    @ResponseBody
+    /*
+    *   Tests the access token
+    *
+    *   Uses the access token to make a test request to
+    *   fetch the most recent ticket in your tenancies
+    *   Zoho Desk ticket queue.
+    */
+    public String testAccessToken() {
         return zohoClientService.useZohoAccessToken();
     }
 
-    @GetMapping("/control-test-ticket")
-    public ZohoTicket controlleTestTicket() {
-        
-        // fetch and deserialize ticket from Zoho Desk
-        ZohoTicket ticket = zohoClientService.getMostRecentTicket();
-        System.out.println("\n\n[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n\n");
 
-        // OLD!!!: embed the ticket - ZohoClientController SHOULD NOT BE RESPONSIBLE FOR EMBEDDING
-        //OllamaClientService ollamaClientService = new OllamaClientService();
-        //float[] embeddedDescription = ollamaClientService.getEmbedding(ticket.getSubject());
-        //ticket.setEmbeddedDescription(embeddedDescription);
-        //System.out.println("\n[Zoho Controller] Embedded description: " + java.util.Arrays.toString(ticket.getEmbeddedDescription()) + "\n\n");
-        
-        // get order of most suitable agents for the ticket
-        int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
 
-        if (agentId == -1) {
-            System.out.println("\n\n[Zoho Controller] No suitable agent found for the ticket.\n\n");
-        } else {
-            System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
-        }
+    /*----- ticket and embedding testing -----*/
 
-        return ticket;
+    @GetMapping("/test-page")
+    /*  
+    *   Displays testing page 
+    *
+    *   When called, returns html for a test form.
+    *   This form allows the submitting of test ticket 
+    *   subjects from the browser. This form submits to 
+    *   to the function after this one. 
+    */
+    public String showTestForm(Model model) {
+        model.addAttribute("ticket", new ZohoTicket());
+        return "test-page";
     }
 
-    @GetMapping("/control-ticket")
-    public ZohoTicket controlleTicket() {
+    @PostMapping("/test-page")
+    /*  
+    *   Submits a test ticket
+    *   
+    *   This function is called when the above test form is
+    *   submitted. The submitted ticket is sent through
+    *   the Zoho Ticket Controller pipeline, only stopping
+    *   short of actually updating the ticket in Zoho Desk. 
+    */
+    public String submitTestTicket(@ModelAttribute ZohoTicket ticket, Model model) {
         
-        // fetch and deserialize ticket from Zoho Desk
-        //ZohoTicket ticket = zohoClientService.getMostRecentTicket();
-        
+        ticket.setId("1234");
+        ticket.setTicketNumber("56789");
+        ticket.setAssigneeId("101112");
+
+        int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
+        System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
+
+        model.addAttribute("ticket", ticket);
+        model.addAttribute("agentId", agentId);
+
+        return "test-page";
+    }
+
+    /*
+    *   Submits a hardcoded test ticket
+    *
+    *   This function has a hardcoded test ticket that is
+    *   sent through the Zoho Ticket Controller pipeline, 
+    *   only stopping short of actually updating the ticket
+    *   in Zoho Desk.
+    */
+    @GetMapping("/sort-test-ticket")
+    @ResponseBody
+    public String sortTestTicket() {
+
         ZohoTicket ticket = new ZohoTicket();
         ticket.setId("1234");
         ticket.setTicketNumber("56789");
         ticket.setSubject("My messages keep bouncing");
         ticket.setAssigneeId("101112");
-        
+
         System.out.println("\n\n[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n\n");
 
-        // OLD!!!: embed the ticket - ZohoClientController SHOULD NOT BE RESPONSIBLE FOR EMBEDDING
-        //OllamaClientService ollamaClientService = new OllamaClientService();
-        //float[] embeddedDescription = ollamaClientService.getEmbedding(ticket.getSubject());
-        //ticket.setEmbeddedDescription(embeddedDescription);
-        //System.out.println("\n[Zoho Controller] Embedded description: " + java.util.Arrays.toString(ticket.getEmbeddedDescription()) + "\n\n");
-        
         // get order of most suitable agents for the ticket
         int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
+        System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
 
-        if (agentId == -1) {
-            System.out.println("\n\n[Zoho Controller] No suitable agent found for the ticket.\n\n");
-        } else {
-            System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
-        }
-
-        return ticket;
+        return ticket.toString();
     }
 
-        @GetMapping("/control-ticket1")
-    public ZohoTicket controlleTicket1() {
-        
+    /*
+    *   Submits a ticket fetched from Zoho Desk
+    *
+    *   This function fetches the most recent ticket from Zoho Desk
+    *   and sends it through the Zoho Ticket Controller pipeline,
+    *   only stopping short of actually updating the ticket in Zoho Desk.
+    */
+    @GetMapping("/sort-ticket")
+    @ResponseBody
+    public String sortTicket() {
+
         // fetch and deserialize ticket from Zoho Desk
-        //ZohoTicket ticket = zohoClientService.getMostRecentTicket();
-        
-        ZohoTicket ticket = new ZohoTicket();
-        ticket.setId("1234");
-        ticket.setTicketNumber("56789");
-        ticket.setSubject("Getting paper jam error");
-        ticket.setAssigneeId("101112");
-        
+        ZohoTicket ticket = zohoClientService.getMostRecentTicket();
         System.out.println("\n\n[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n\n");
 
-        // OLD!!!: embed the ticket - ZohoClientController SHOULD NOT BE RESPONSIBLE FOR EMBEDDING
-        //OllamaClientService ollamaClientService = new OllamaClientService();
-        //float[] embeddedDescription = ollamaClientService.getEmbedding(ticket.getSubject());
-        //ticket.setEmbeddedDescription(embeddedDescription);
-        //System.out.println("\n[Zoho Controller] Embedded description: " + java.util.Arrays.toString(ticket.getEmbeddedDescription()) + "\n\n");
-        
         // get order of most suitable agents for the ticket
         int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
+        System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
 
-        if (agentId == -1) {
-            System.out.println("\n\n[Zoho Controller] No suitable agent found for the ticket.\n\n");
-        } else {
-            System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
-        }
-        
-        return ticket;
-    }
-
-        @GetMapping("/control-ticket2")
-    public ZohoTicket controlleTicket2() {
-        
-        // fetch and deserialize ticket from Zoho Desk
-        //ZohoTicket ticket = zohoClientService.getMostRecentTicket();
-        
-        ZohoTicket ticket = new ZohoTicket();
-        ticket.setId("1234");
-        ticket.setTicketNumber("56789");
-        ticket.setSubject("Files not syncing to cloud");
-        ticket.setAssigneeId("101112");
-        
-        System.out.println("\n\n[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n\n");
-
-        // OLD!!!: embed the ticket - ZohoClientController SHOULD NOT BE RESPONSIBLE FOR EMBEDDING
-        //OllamaClientService ollamaClientService = new OllamaClientService();
-        //float[] embeddedDescription = ollamaClientService.getEmbedding(ticket.getSubject());
-        //ticket.setEmbeddedDescription(embeddedDescription);
-        //System.out.println("\n[Zoho Controller] Embedded description: " + java.util.Arrays.toString(ticket.getEmbeddedDescription()) + "\n\n");
-        
-        // get order of most suitable agents for the ticket
-        int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
-
-        if (agentId == -1) {
-            System.out.println("\n\n[Zoho Controller] No suitable agent found for the ticket.\n\n");
-        } else {
-            System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
-        }
-        
-        return ticket;
-    }
-
-        @GetMapping("/control-ticket3")
-    public ZohoTicket controlleTicket3() {
-        
-        // fetch and deserialize ticket from Zoho Desk
-        //ZohoTicket ticket = zohoClientService.getMostRecentTicket();
-        
-        ZohoTicket ticket = new ZohoTicket();
-        ticket.setId("1234");
-        ticket.setTicketNumber("56789");
-        ticket.setSubject("Can't connect to office Wi-Fi");
-        ticket.setAssigneeId("101112");
-        
-        System.out.println("\n\n[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n\n");
-
-        // OLD!!!: embed the ticket - ZohoClientController SHOULD NOT BE RESPONSIBLE FOR EMBEDDING
-        //OllamaClientService ollamaClientService = new OllamaClientService();
-        //float[] embeddedDescription = ollamaClientService.getEmbedding(ticket.getSubject());
-        //ticket.setEmbeddedDescription(embeddedDescription);
-        //System.out.println("\n[Zoho Controller] Embedded description: " + java.util.Arrays.toString(ticket.getEmbeddedDescription()) + "\n\n");
-        
-        // get order of most suitable agents for the ticket
-        int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
-
-        if (agentId == -1) {
-            System.out.println("\n\n[Zoho Controller] No suitable agent found for the ticket.\n\n");
-        } else {
-            System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
-        }
-        
-        return ticket;
-    }
-
-        @GetMapping("/control-ticket4")
-    public ZohoTicket controlleTicket4() {
-        
-        // fetch and deserialize ticket from Zoho Desk
-        //ZohoTicket ticket = zohoClientService.getMostRecentTicket();
-        
-        ZohoTicket ticket = new ZohoTicket();
-        ticket.setId("1234");
-        ticket.setTicketNumber("56789");
-        ticket.setSubject("Computer keeps restarting");
-        ticket.setAssigneeId("101112");
-        
-        System.out.println("\n\n[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n\n");
-
-        // OLD!!!: embed the ticket - ZohoClientController SHOULD NOT BE RESPONSIBLE FOR EMBEDDING
-        //OllamaClientService ollamaClientService = new OllamaClientService();
-        //float[] embeddedDescription = ollamaClientService.getEmbedding(ticket.getSubject());
-        //ticket.setEmbeddedDescription(embeddedDescription);
-        //System.out.println("\n[Zoho Controller] Embedded description: " + java.util.Arrays.toString(ticket.getEmbeddedDescription()) + "\n\n");
-        
-        // get order of most suitable agents for the ticket
-        int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
-
-        if (agentId == -1) {
-            System.out.println("\n\n[Zoho Controller] No suitable agent found for the ticket.\n\n");
-        } else {
-            System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
-        }
-        
-        return ticket;
-    }
-
-    @GetMapping("/control-ticket5")
-    public ZohoTicket controlleTicket5() {
-        
-        // fetch and deserialize ticket from Zoho Desk
-        //ZohoTicket ticket = zohoClientService.getMostRecentTicket();
-        
-        ZohoTicket ticket = new ZohoTicket();
-        ticket.setId("1234");
-        ticket.setTicketNumber("56789");
-        ticket.setSubject("Keep getting malware warnings");
-        ticket.setAssigneeId("101112");
-        
-        System.out.println("\n\n[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n\n");
-
-        // OLD!!!: embed the ticket - ZohoClientController SHOULD NOT BE RESPONSIBLE FOR EMBEDDING
-        //OllamaClientService ollamaClientService = new OllamaClientService();
-        //float[] embeddedDescription = ollamaClientService.getEmbedding(ticket.getSubject());
-        //ticket.setEmbeddedDescription(embeddedDescription);
-        //System.out.println("\n[Zoho Controller] Embedded description: " + java.util.Arrays.toString(ticket.getEmbeddedDescription()) + "\n\n");
-        
-        // get order of most suitable agents for the ticket
-        int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
-
-        if (agentId == -1) {
-            System.out.println("\n\n[Zoho Controller] No suitable agent found for the ticket.\n\n");
-        } else {
-            System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
-        }
-        
-        return ticket;
-    }
-
-    @GetMapping("/control-ticket6")
-    public ZohoTicket controlleTicket6() {
-        
-        // fetch and deserialize ticket from Zoho Desk
-        //ZohoTicket ticket = zohoClientService.getMostRecentTicket();
-        
-        ZohoTicket ticket = new ZohoTicket();
-        ticket.setId("1234");
-        ticket.setTicketNumber("56789");
-        ticket.setSubject("App blocked by defender");
-        ticket.setAssigneeId("101112");
-        
-        System.out.println("\n\n[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n\n");
-
-        // OLD!!!: embed the ticket - ZohoClientController SHOULD NOT BE RESPONSIBLE FOR EMBEDDING
-        //OllamaClientService ollamaClientService = new OllamaClientService();
-        //float[] embeddedDescription = ollamaClientService.getEmbedding(ticket.getSubject());
-        //ticket.setEmbeddedDescription(embeddedDescription);
-        //System.out.println("\n[Zoho Controller] Embedded description: " + java.util.Arrays.toString(ticket.getEmbeddedDescription()) + "\n\n");
-        
-        // get order of most suitable agents for the ticket
-        int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
-
-        if (agentId == -1) {
-            System.out.println("\n\n[Zoho Controller] No suitable agent found for the ticket.\n\n");
-        } else {
-            System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
-        }
-        
-        return ticket;
+        return ticket.toString();
     }
 }

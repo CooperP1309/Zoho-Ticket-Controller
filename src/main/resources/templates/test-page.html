@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<!-- 1. The namespace attribute activates Thymeleaf processing -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${pageTitle}">Fallback Page Title</title>
+    <!-- 2. Linking internal CSS files dynamically -->
+    <link rel="stylesheet" th:href="@{/css/main.css}" href="../static/css/main.css" />
+</head>
+<body>
+
+    <header>
+        <!-- 3. th:text completely replaces the fallback tag content -->
+        <h1 th:text="${welcomeMessage}">Welcome, Guest!</h1>
+    </header>
+
+    <main>
+        <!-- 4. Conditional rendering (evaluates boolean conditions) -->
+        <div th:if="${userRole == 'ADMIN'}">
+            <p>Admin Control Panel Activated.</p>
+        </div>
+
+        <!-- 5. Iterating through lists or collections -->
+        <h3>Product Catalog</h3>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Loops over 'products' collection; creates 'prod' local variable -->
+                <tr th:each="prod : ${products}">
+                    <td th:text="${prod.name}">Sample Item</td>
+                    <td th:text="${prod.price}">$0.00</td>
+                </tr>
+                <!-- Renders if the product list is completely empty -->
+                <tr th:if="${#lists.isEmpty(products)}">
+                    <td colspan="2">No inventory available.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- 6. Form Handling and Data Binding -->
+        <h3>Submit Test Ticket</h3>
+        <form th:action="@{/zoho/test-page}" th:object="${ticket}" method="post">
+            <label for="subject">Ticket Subject:</label>
+            <!-- th:field binds inputs to the Java object property -->
+            <input type="text" id="subject" th:field="*{subject}" />
+            <button type="submit">Send</button>
+        </form>
+
+        <div th:if="${agentId != null}">
+            <p th:if="${agentId == -1}">No suitable agent found for the ticket.</p>
+            <p th:if="${agentId != -1}">Most suitable agent ID: <span th:text="${agentId}">0</span></p>
+        </div>
+
+        <!-- 7. Dynamic Links with URL Parameters -->
+        <p>
+            <a th:href="@{/profile(id=${userId})}">View User Profile</a>
+        </p>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Thymeleaf Application Context</p>
+    </footer>
+
+</body>
+</html>

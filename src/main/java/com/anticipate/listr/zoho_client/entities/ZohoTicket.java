@@ -50,4 +50,14 @@ public class ZohoTicket {
     public void setAssigneeId(String assigneeId) {
         this.assigneeId = assigneeId;
     }
+
+    @Override
+    public String toString() {
+        return "ZohoTicket{" +
+                "id='" + id + '\'' +
+                ", ticketNumber='" + ticketNumber + '\'' +
+                ", subject='" + subject + '\'' +
+                ", assigneeId='" + assigneeId + '\'' +
+                '}';
+    }
 }
