@@ -12,6 +12,8 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 /* local modules */
 import com.anticipate.listr.embedding.entities.AgentRanking;
@@ -111,16 +113,21 @@ public class SkillEmbeddingService {
             agentRanking.setSimilarityScore((double) similarity);
             agentRanking.setName(getNameFromAgentId(agentRanking.getZohoId()));
             agentRankings.add(agentRanking);
-            
-            /*
-            if (similarity > bestSimilarity) {
-                bestSimilarity = similarity;
-                bestAgentId = Integer.valueOf(embeddedSkill.getZohoId());
-            }
-            */
         }
 
+        // sort agent rankings by similarity score
         agentRankings.sort(Comparator.comparingDouble(AgentRanking::getSimilarityScore).reversed());
+
+        // remove duplicate agent names, starting from the lowest skill rankings
+        List<AgentRanking> uniqueAgentRankings = new ArrayList<>();
+        Set<String> seenAgentNames = new HashSet<>();
+        for (AgentRanking agentRanking : agentRankings) {
+            if (seenAgentNames.add(agentRanking.getName())) {
+                uniqueAgentRankings.add(agentRanking);
+            }
+        }
+        agentRankings = uniqueAgentRankings;
+
         System.out.println("[SkillEmbeddingService] Best agent ID for ticket subject '" + ticketSubject + "' is: " + agentRankings.get(0).getZohoId() + " with similarity: " + agentRankings.get(0).getSimilarityScore());
 
         return agentRankings;
