@@ -1,15 +1,20 @@
 package com.anticipate.listr.embedding.services;
 
-import com.anticipate.listr.embedding.entities.EmbeddedSkill;
-import com.anticipate.listr.embedding.entities.Agent; 
+/* spring specific modules */
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.core.io.Resource;
 import tools.jackson.databind.ObjectMapper;
+
+/* java modules */
 import java.util.List;
 import java.util.ArrayList;
+
+/* local modules */
+import com.anticipate.listr.embedding.entities.EmbeddedSkill;
+import com.anticipate.listr.embedding.entities.Agent; 
 
 @Service
 public class SkillEmbeddingService {
@@ -34,7 +39,7 @@ public class SkillEmbeddingService {
 
         ollamaClientService = new OllamaClientService();
 
-        System.out.println("\n\n");
+        System.out.println("\n[SkillEmbeddingService]   Starting agent skill vectorising...\n");
 
         for (Agent agent : agentList) {
 
@@ -45,16 +50,20 @@ public class SkillEmbeddingService {
                 EmbeddedSkill embeddedSkill = new EmbeddedSkill(String.valueOf(agent.getZohoId()), skill, embeddeding);
                 embeddedSkills.add(embeddedSkill);
 
-                System.out.println("\nSkill name: " + embeddedSkill.getSkill() + ", zohoId: " + embeddedSkill.getZohoId() + ", Embedding: " + embeddedSkill.embedding[0] + ", " + embeddedSkill.embedding[1] + ", ..., " + embeddedSkill.embedding[767] + "\n");
+                System.out.println("[SkillEmbeddingService]   Skill: " + embeddedSkill.getSkill() + ", zohoId: " + embeddedSkill.getZohoId() + ", Embedding: " + embeddedSkill.embedding[0] + ", " + embeddedSkill.embedding[1] + ", ..., " + embeddedSkill.embedding[767]);
             }
         }
 
-        System.out.println("\n\n DID WE GET EMBEDDINGS FROM THE ACTUAL LLM SERVER? \n\n");
-
-        //System.out.println("\n\n\nSkillEmbeddingService initialized with " + agentList.length + " agents.\n\n\n");
-        //System.out.println("Agent3: " + agentList[2].getName() + ", Zoho ID: " + agentList[2].getZohoId() + ", Skills: " + String.join(", ", agentList[2].getSkills()) + "\n\n\n");
+        System.out.println("\n[SkillEmbeddingService]   Agent skill vectorising completed.\n");
     }
 
+    /*
+    *   Finds the best agent for a given ticket subject based on skill embeddings.
+    *
+    *   ticketSubject: The subject of the ticket for which we want to find the best agent.
+    *   returns: The Zoho ID of the agent whose skills best match the ticket subject
+    *   based on cosine similarity of embeddings.
+    */
     public int getSimilarityAgentId(String ticketSubject) {
 
         // vectorize the ticket subject
@@ -63,7 +72,7 @@ public class SkillEmbeddingService {
         int bestAgentId = -1;
         float bestSimilarity = -1.0f;
 
-        // run similarity search against the embedded skills
+        // run similarity search against each embedded skill
         for (EmbeddedSkill embeddedSkill : embeddedSkills) {
             float similarity = cosineSimilarity(ticketEmbedding, embeddedSkill.getEmbedding());
             if (similarity > bestSimilarity) {
@@ -72,11 +81,18 @@ public class SkillEmbeddingService {
             }
         }
 
-        System.out.println("\n\n[SkillEmbeddingService] Best agent ID for ticket subject '" + ticketSubject + "' is: " + bestAgentId + " with similarity: " + bestSimilarity + "\n\n");
+        System.out.println("[SkillEmbeddingService] Best agent ID for ticket subject '" + ticketSubject + "' is: " + bestAgentId + " with similarity: " + bestSimilarity);
 
         return bestAgentId;
     }
 
+    /*
+    *   Computes the cosine similarity between two vectors.
+    *
+    *   ticketVector: The vector representation of the ticket subject.
+    *   skillVector: The vector representation of the agent's skill.
+    *   returns: The cosine similarity score between the two vectors.
+    */
     private static float cosineSimilarity(float[] ticketVector, float[] skillVector) {
     
         if (ticketVector.length != skillVector.length) {

@@ -1,11 +1,6 @@
 package com.anticipate.listr.zoho_client.controllers;
 
-import com.anticipate.listr.embedding.services.SkillEmbeddingService;
-import com.anticipate.listr.embedding.services.OllamaClientService;
-import com.anticipate.listr.zoho_client.entities.ZohoTicket;
-import com.anticipate.listr.zoho_client.services.ZohoClientService;
-import com.anticipate.listr.jwt_handling.entities.User;
-import com.anticipate.listr.jwt_handling.services.UserService;
+/* spring specific modules */
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,10 +10,18 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-//import org.springframework.web.bind.annotation.RestController;
 import org.springframework.stereotype.Controller;
 
+/* java modules */
 import java.util.List;
+
+/* local modules */
+import com.anticipate.listr.embedding.services.SkillEmbeddingService;
+import com.anticipate.listr.embedding.services.OllamaClientService;
+import com.anticipate.listr.zoho_client.entities.ZohoTicket;
+import com.anticipate.listr.zoho_client.services.ZohoClientService;
+import com.anticipate.listr.jwt_handling.entities.User;
+import com.anticipate.listr.jwt_handling.services.UserService;
 
 @RequestMapping("/zoho")
 @Controller
@@ -109,7 +112,7 @@ public class ZohoClientController {
         ticket.setAssigneeId("101112");
 
         int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
-        System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
+        System.out.println("[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n");
 
         model.addAttribute("ticket", ticket);
         model.addAttribute("agentId", agentId);
@@ -117,6 +120,8 @@ public class ZohoClientController {
         return "test-page";
     }
 
+    @GetMapping("/sort-test-ticket")
+    @ResponseBody
     /*
     *   Submits a hardcoded test ticket
     *
@@ -125,8 +130,6 @@ public class ZohoClientController {
     *   only stopping short of actually updating the ticket
     *   in Zoho Desk.
     */
-    @GetMapping("/sort-test-ticket")
-    @ResponseBody
     public String sortTestTicket() {
 
         ZohoTicket ticket = new ZohoTicket();
@@ -139,11 +142,13 @@ public class ZohoClientController {
 
         // get order of most suitable agents for the ticket
         int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
-        System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
+        System.out.println("[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n");
 
         return ticket.toString();
     }
 
+    @GetMapping("/sort-ticket")
+    @ResponseBody
     /*
     *   Submits a ticket fetched from Zoho Desk
     *
@@ -151,17 +156,15 @@ public class ZohoClientController {
     *   and sends it through the Zoho Ticket Controller pipeline,
     *   only stopping short of actually updating the ticket in Zoho Desk.
     */
-    @GetMapping("/sort-ticket")
-    @ResponseBody
     public String sortTicket() {
 
         // fetch and deserialize ticket from Zoho Desk
         ZohoTicket ticket = zohoClientService.getMostRecentTicket();
-        System.out.println("\n\n[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n\n");
+        System.out.println("[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n");
 
         // get order of most suitable agents for the ticket
         int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
-        System.out.println("\n\n[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n\n");
+        System.out.println("[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n");
 
         return ticket.toString();
     }

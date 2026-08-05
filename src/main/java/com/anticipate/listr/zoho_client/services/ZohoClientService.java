@@ -1,12 +1,15 @@
 package com.anticipate.listr.zoho_client.services;
 
-import com.anticipate.listr.zoho_client.entities.ZohoAuthHeader;
-import com.anticipate.listr.zoho_client.entities.ZohoTicket;
-import com.anticipate.listr.zoho_client.entities.ZohoTicketListResponse;
+/* spring specific modules */
 import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+
+/* local modules */
+import com.anticipate.listr.zoho_client.entities.ZohoAuthHeader;
+import com.anticipate.listr.zoho_client.entities.ZohoTicket;
+import com.anticipate.listr.zoho_client.entities.ZohoTicketListResponse;
 
 @Service
 public class ZohoClientService {
@@ -19,7 +22,6 @@ public class ZohoClientService {
 
     ZohoAuthHeader zohoAuthHeader;
 
-    // Constructor preceeds @Value injection - Hence the constructor injection
     public ZohoClientService(
             @Value("${zoho.client.id}") String clientId,
             @Value("${zoho.client.secret}") String clientSecret,
@@ -33,18 +35,17 @@ public class ZohoClientService {
                             "&scope=Desk.tickets.READ&soid=Desk." + orgId;
 
         this.tokenHost = tokenHost;
-
         this.zohoAuthHeader = new ZohoAuthHeader();
         this.zohoAuthHeader.setOrgId(orgId);
     }
 
-    public String getExample() {
-        return restClient.get()
-                .uri("https://example.com")
-                .retrieve()
-                .body(String.class);
-    }
-
+    /*
+    *   Gets an access token
+    *
+    *   Uses Zoho Client Service to fetch an access token
+    *   from Zoho Desk. The token returned from this
+    *   endpoint is only scoped to the Zoho Desk API.
+    */
     public String getZohoAccessToken() {
 
         ZohoAuthHeader tokenResponse =  
@@ -56,7 +57,7 @@ public class ZohoClientService {
                 .retrieve()
                 .body(ZohoAuthHeader.class);
 
-        // access token set seperately to not overwrite the zsoid written in constructor
+        // NOTE: access token set seperately to not overwrite the zsoid written during constructor
         this.zohoAuthHeader.setAccessToken(tokenResponse.getAccessToken());
 
         return "RESULTING HEADERS FROM ZOHO AUTH CLASS:\n" +
@@ -64,11 +65,23 @@ public class ZohoClientService {
                 this.zohoAuthHeader.getOrgIdHeaderName() + ": " + this.zohoAuthHeader.getOrgIdHeaderValue();
     }
 
+    /*
+    *   Fetches the access token as string
+    *
+    *   Returns the retrieved access token in string format.
+    */
     public String printZohoAccessToken() {
         return this.zohoAuthHeader.getAuthHeaderName() + ": " + this.zohoAuthHeader.getAuthHeaderValue() + "\n" +
                 this.zohoAuthHeader.getOrgIdHeaderName() + ": " + this.zohoAuthHeader.getOrgIdHeaderValue();
     }
 
+    /*
+    *   Uses the access token
+    *
+    *   Uses the access token to make a test request to
+    *   fetch the most recent ticket in your tenancies
+    *   Zoho Desk ticket queue. DOESN'T deserialize response.
+    */
     public String useZohoAccessToken() {
         return restClient.get()
                 .uri("https://desk.zoho.com.au/api/v1/tickets?sortBy=-createdTime&limit=1")
@@ -78,6 +91,14 @@ public class ZohoClientService {
                 .body(String.class);
     }
 
+    /*
+    *   Fetches the most recent ticket
+    *
+    *   Uses the access token to make a request to
+    *   fetch the most recent ticket in your tenancies
+    *   Zoho Desk ticket queue. This resposne is then
+    *   deserialized into a ZohoTicket object.
+    */
     public ZohoTicket getMostRecentTicket() {
         ZohoTicketListResponse response =
 
@@ -89,9 +110,6 @@ public class ZohoClientService {
                 .body(ZohoTicketListResponse.class);
 
         ZohoTicket ticket = response.getData().get(0);
-
-        //System.out.println("\n\nMost recent ticket retrieved: " + ticket.getTicketNumber() + " - " + ticket.getSubject());
-        //System.out.println("\nAssignee ID: " + ticket.getAssigneeId() + "\n\n");
 
         return ticket;
     }
