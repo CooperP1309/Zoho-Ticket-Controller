@@ -48,14 +48,14 @@ public class SkillEmbeddingService {
         for (Agent agent : agentList) {
 
             String[] agentSkills = agent.getSkills();
-/*
+
             for (String skill : agentSkills) {
                 float[] embeddeding = ollamaClientService.getEmbedding(skill);
                 EmbeddedSkill embeddedSkill = new EmbeddedSkill(String.valueOf(agent.getZohoId()), skill, embeddeding);
                 embeddedSkills.add(embeddedSkill);
 
                 System.out.println("[SkillEmbeddingService]   Skill: " + embeddedSkill.getSkill() + ", zohoId: " + embeddedSkill.getZohoId() + ", Embedding: " + embeddedSkill.embedding[0] + ", " + embeddedSkill.embedding[1] + ", ..., " + embeddedSkill.embedding[767]);
-            }*/
+            }
         }
 
         System.out.println("\n[SkillEmbeddingService]   Agent skill vectorising completed.\n");

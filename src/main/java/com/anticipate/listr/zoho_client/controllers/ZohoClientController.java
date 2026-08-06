@@ -24,6 +24,7 @@ import com.anticipate.listr.zoho_client.entities.ZohoTicket;
 import com.anticipate.listr.zoho_client.services.ZohoClientService;
 import com.anticipate.listr.jwt_handling.entities.User;
 import com.anticipate.listr.jwt_handling.services.UserService;
+import com.anticipate.listr.zoho_client.utilities.AgentLoadBalancerUtility;
 
 @RequestMapping("/zoho")
 @Controller
@@ -31,11 +32,13 @@ public class ZohoClientController {
     private final UserService userService;
     private final ZohoClientService zohoClientService;
     private final SkillEmbeddingService skillEmbeddingService;
+    private final AgentLoadBalancerUtility agentLoadBalancerUtility;
 
-    public ZohoClientController(UserService userService, ZohoClientService zohoClientService, SkillEmbeddingService skillEmbeddingService) {
+    public ZohoClientController(UserService userService, ZohoClientService zohoClientService, SkillEmbeddingService skillEmbeddingService, AgentLoadBalancerUtility agentLoadBalancerUtility) {
         this.userService = userService;
         this.zohoClientService = zohoClientService;
         this.skillEmbeddingService = skillEmbeddingService;
+        this.agentLoadBalancerUtility = agentLoadBalancerUtility;
     }
 
 
@@ -80,31 +83,19 @@ public class ZohoClientController {
         return zohoClientService.useZohoAccessToken();
     }
 
-    @GetMapping("/test-agent-traffic")
-    @ResponseBody
-    /*
-    *   Tests the endpoint for agent traffic
-    *
-    *   Uses the access token to make a test request to
-    *   fetch the number of tickets assgined to each agent
-    *   in your tenancies Zoho Desk.
-    */
-    public String testAgentTraffic() {
-        //return zohoClientService.getAgentTicketCounts();
-        return "TEST";
-    }
-
-
     @PostMapping("/test-agent-traffic")
     @ResponseBody
     /*
-    *   TEMP ENDPOINT REQUIRING POSTING OF AGENNT ID
+    *   Test endpoint for checking ticket for an agent
     *
     *   Uses the access token to make a test request to
     *   fetch the number of tickets assgined to each agent
     *   in your tenancies Zoho Desk.
+    * 
+    *   USAGE (POST BODY): <assigneeId>
+    *   (There's no json formatting here, just raw text)
     */
-    public String testTraffic(@RequestBody String agentId) {
+    public int testTraffic(@RequestBody String agentId) {
         return zohoClientService.getAgentTicketCounts(agentId);
     }
 
@@ -139,31 +130,19 @@ public class ZohoClientController {
         ticket.setTicketNumber("56789");
         ticket.setAssigneeId("101112");
 
+        // get similarity ranking
         List<AgentRanking> agentRankings = skillEmbeddingService.getSimilarityAgentRanking(ticket.getSubject());
         System.out.println("[Zoho Controller] Most suitable agent ID for the ticket: " + agentRankings.get(0).getZohoId() + "\n");
+
+        // load balance the ticket to the most suitable agent
+        agentRankings = agentLoadBalancerUtility.loadBalanceAgentRanking(agentRankings);
+        System.out.println("[Zoho Controller] Most suitable agent ID for the ticket after load balancing: " + agentRankings.get(0).getZohoId() + "\n");
 
         model.addAttribute("ticket", ticket);
         model.addAttribute("agentRankings", agentRankings);
 
         return "test-page";
     }    
-    /*
-    public String submitTestTicket(@ModelAttribute ZohoTicket ticket, Model model) {
-        
-        ticket.setId("1234");
-        ticket.setTicketNumber("56789");
-        ticket.setAssigneeId("101112");
-
-        int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
-        System.out.println("[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n");
-
-        model.addAttribute("ticket", ticket);
-        model.addAttribute("agentId", agentId);
-        model.addAttribute("agentName", skillEmbeddingService.getNameFromAgentId(agentId));
-
-        return "test-page";
-    }
-    */
 
     @GetMapping("/sort-test-ticket")
     @ResponseBody

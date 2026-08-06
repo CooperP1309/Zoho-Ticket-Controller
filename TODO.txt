@@ -9,5 +9,5 @@
  - Check for blank Zoho API Credentials during access token function in ZohoClientService.java
  - Implement persistent database for agent skills
  - Make start script to automate launching of sql server
- - Potentially remove Agent class. (Never used outside of a single function)
+ - Reimplement Agent class access via a "Repo" class
  - Improve AgentSimilarityRanking Algorithm (apply set to compile straight from the for loop)

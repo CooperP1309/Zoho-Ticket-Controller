@@ -10,6 +10,9 @@ import org.springframework.web.client.RestClient;
 import com.anticipate.listr.zoho_client.entities.ZohoAuthHeader;
 import com.anticipate.listr.zoho_client.entities.ZohoTicket;
 import com.anticipate.listr.zoho_client.entities.ZohoTicketListResponse;
+import com.anticipate.listr.zoho_client.entities.TicketCountList;
+import com.anticipate.listr.zoho_client.entities.TicketCount;
+import com.anticipate.listr.zoho_client.utilities.AgentLoadBalancerUtility;
 
 @Service
 public class ZohoClientService {
@@ -118,26 +121,24 @@ public class ZohoClientService {
     *   Fetches the agent traffic data
     *
     *   Uses the access token to make a request to
-    *   fetch the ticket counts, broken down by status,
-    *   for a single agent in your tenancies Zoho Desk.
-    *   ticketsCountByFieldValues only groups by ticket
-    *   fields (statusType/status/priority/etc.), so it
-    *   must be scoped to one agent per call via assigneeId
-    *   rather than grouping by agent directly.
+    *   fetch the ticket counts. The response from Zoho
+    *   returns that agents ticket count for each status type.
     */
-    public String getAgentTicketCounts(String assigneeId) {
+    public int getAgentTicketCounts(String assigneeId) {
 
-        String response =
+        TicketCountList response =
 
             restClient.get()
                 .uri("https://desk.zoho.com.au/api/v1/ticketsCountByFieldValues?assigneeId=" + assigneeId + "&field=statusType")
                 .header(this.zohoAuthHeader.getAuthHeaderName(), this.zohoAuthHeader.getAuthHeaderValue())
                 .header(this.zohoAuthHeader.getOrgIdHeaderName(), this.zohoAuthHeader.getOrgIdHeaderValue())
                 .retrieve()
-                .body(String.class);
+                .body(TicketCountList.class);
 
-        System.out.println("[ZohoClientService] Agent traffic response: " + response);
+        TicketCount ticketCount = response.getStatusType().get(0);
 
-        return response;
+        System.out.println("[ZohoClientService] Agent traffic response: " + ticketCount.getCount());
+
+        return ticketCount.getCount();
     }
 }
