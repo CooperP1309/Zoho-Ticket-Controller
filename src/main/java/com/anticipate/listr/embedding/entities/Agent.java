@@ -11,7 +11,7 @@ public class Agent {
     private String name;
 
     @JsonProperty("zoho_id")
-    private int zohoId;
+    private String zohoId;
 
     @JsonProperty("skills")
     private String[] skills;
@@ -20,7 +20,7 @@ public class Agent {
         return name;
     }
 
-    public int getZohoId() {
+    public String getZohoId() {
         return zohoId;
     }
 

@@ -48,14 +48,14 @@ public class SkillEmbeddingService {
         for (Agent agent : agentList) {
 
             String[] agentSkills = agent.getSkills();
-
+/*
             for (String skill : agentSkills) {
                 float[] embeddeding = ollamaClientService.getEmbedding(skill);
                 EmbeddedSkill embeddedSkill = new EmbeddedSkill(String.valueOf(agent.getZohoId()), skill, embeddeding);
                 embeddedSkills.add(embeddedSkill);
 
                 System.out.println("[SkillEmbeddingService]   Skill: " + embeddedSkill.getSkill() + ", zohoId: " + embeddedSkill.getZohoId() + ", Embedding: " + embeddedSkill.embedding[0] + ", " + embeddedSkill.embedding[1] + ", ..., " + embeddedSkill.embedding[767]);
-            }
+            }*/
         }
 
         System.out.println("\n[SkillEmbeddingService]   Agent skill vectorising completed.\n");
@@ -68,12 +68,12 @@ public class SkillEmbeddingService {
     *   returns: The Zoho ID of the agent whose skills best match the ticket subject
     *   based on cosine similarity of embeddings.
     */
-    public int getSimilarityAgentId(String ticketSubject) {
+    public String getSimilarityAgentId(String ticketSubject) {
 
         // vectorize the ticket subject
         float[] ticketEmbedding = ollamaClientService.getEmbedding(ticketSubject);
 
-        int bestAgentId = -1;
+        String bestAgentId = null;
         float bestSimilarity = -1.0f;
 
         // run similarity search against each embedded skill
@@ -81,7 +81,7 @@ public class SkillEmbeddingService {
             float similarity = cosineSimilarity(ticketEmbedding, embeddedSkill.getEmbedding());
             if (similarity > bestSimilarity) {
                 bestSimilarity = similarity;
-                bestAgentId = Integer.valueOf(embeddedSkill.getZohoId());
+                bestAgentId = embeddedSkill.getZohoId();
             }
         }
 
@@ -109,7 +109,7 @@ public class SkillEmbeddingService {
             float similarity = cosineSimilarity(ticketEmbedding, embeddedSkill.getEmbedding());
             
             AgentRanking agentRanking = new AgentRanking();
-            agentRanking.setZohoId(Integer.valueOf(embeddedSkill.getZohoId()));
+            agentRanking.setZohoId(embeddedSkill.getZohoId());
             agentRanking.setSimilarityScore((double) similarity);
             agentRanking.setName(getNameFromAgentId(agentRanking.getZohoId()));
             agentRankings.add(agentRanking);
@@ -171,9 +171,9 @@ public class SkillEmbeddingService {
     * 
     *   TODO: Modify getSimilarityAgentId so we can delete this stupid function
     */
-    public String getNameFromAgentId(int agentId) {
+    public String getNameFromAgentId(String agentId) {
         for (Agent agent : agentList) {
-            if (agent.getZohoId() == agentId) {
+            if (agent.getZohoId().equals(agentId)) {
                 return agent.getName();
             }
         }

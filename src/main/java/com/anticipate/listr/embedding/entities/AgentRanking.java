@@ -11,7 +11,7 @@ public class AgentRanking {
     private String name;
 
     @JsonProperty("zoho_id")
-    private int zohoId;
+    private String zohoId;
 
     @JsonProperty("similarity_score")
     private double similarityScore;
@@ -23,7 +23,7 @@ public class AgentRanking {
         return name;
     }
 
-    public int getZohoId() {
+    public String getZohoId() {
         return zohoId;
     }
 
@@ -39,7 +39,7 @@ public class AgentRanking {
         this.name = name;
     }
 
-    public void setZohoId(int zohoId) {
+    public void setZohoId(String zohoId) {
         this.zohoId = zohoId;
     }
 

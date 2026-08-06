@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.stereotype.Controller;
 
 /* java modules */
@@ -79,7 +80,33 @@ public class ZohoClientController {
         return zohoClientService.useZohoAccessToken();
     }
 
+    @GetMapping("/test-agent-traffic")
+    @ResponseBody
+    /*
+    *   Tests the endpoint for agent traffic
+    *
+    *   Uses the access token to make a test request to
+    *   fetch the number of tickets assgined to each agent
+    *   in your tenancies Zoho Desk.
+    */
+    public String testAgentTraffic() {
+        //return zohoClientService.getAgentTicketCounts();
+        return "TEST";
+    }
 
+
+    @PostMapping("/test-agent-traffic")
+    @ResponseBody
+    /*
+    *   TEMP ENDPOINT REQUIRING POSTING OF AGENNT ID
+    *
+    *   Uses the access token to make a test request to
+    *   fetch the number of tickets assgined to each agent
+    *   in your tenancies Zoho Desk.
+    */
+    public String testTraffic(@RequestBody String agentId) {
+        return zohoClientService.getAgentTicketCounts(agentId);
+    }
 
     /*----- ticket and embedding testing -----*/
 
@@ -159,7 +186,7 @@ public class ZohoClientController {
         System.out.println("\n\n[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n\n");
 
         // get order of most suitable agents for the ticket
-        int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
+        String agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
         System.out.println("[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n");
 
         return ticket.toString();
@@ -181,7 +208,7 @@ public class ZohoClientController {
         System.out.println("[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n");
 
         // get order of most suitable agents for the ticket
-        int agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
+        String agentId = skillEmbeddingService.getSimilarityAgentId(ticket.getSubject());
         System.out.println("[Zoho Controller] Most suitable agent ID for the ticket: " + agentId + "\n");
 
         return ticket.toString();

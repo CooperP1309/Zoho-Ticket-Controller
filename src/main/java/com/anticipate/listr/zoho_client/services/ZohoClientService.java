@@ -113,4 +113,31 @@ public class ZohoClientService {
 
         return ticket;
     }
+
+    /*
+    *   Fetches the agent traffic data
+    *
+    *   Uses the access token to make a request to
+    *   fetch the ticket counts, broken down by status,
+    *   for a single agent in your tenancies Zoho Desk.
+    *   ticketsCountByFieldValues only groups by ticket
+    *   fields (statusType/status/priority/etc.), so it
+    *   must be scoped to one agent per call via assigneeId
+    *   rather than grouping by agent directly.
+    */
+    public String getAgentTicketCounts(String assigneeId) {
+
+        String response =
+
+            restClient.get()
+                .uri("https://desk.zoho.com.au/api/v1/ticketsCountByFieldValues?assigneeId=" + assigneeId + "&field=statusType")
+                .header(this.zohoAuthHeader.getAuthHeaderName(), this.zohoAuthHeader.getAuthHeaderValue())
+                .header(this.zohoAuthHeader.getOrgIdHeaderName(), this.zohoAuthHeader.getOrgIdHeaderValue())
+                .retrieve()
+                .body(String.class);
+
+        System.out.println("[ZohoClientService] Agent traffic response: " + response);
+
+        return response;
+    }
 }
