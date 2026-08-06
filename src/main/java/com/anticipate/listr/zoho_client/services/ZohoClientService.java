@@ -32,7 +32,7 @@ public class ZohoClientService {
 
         this.preTokenBody = "grant_type=client_credentials&client_id=" + clientId +
                             "&client_secret=" + clientSecret + 
-                            "&scope=Desk.tickets.READ&soid=Desk." + orgId;
+                            "&scope=Desk.tickets.READ,Desk.search.READ&soid=Desk." + orgId;
 
         this.tokenHost = tokenHost;
         this.zohoAuthHeader = new ZohoAuthHeader();
