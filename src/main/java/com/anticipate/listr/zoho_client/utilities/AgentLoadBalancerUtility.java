@@ -4,6 +4,7 @@ package com.anticipate.listr.zoho_client.utilities;
 import org.springframework.stereotype.Component;
 
 /* java modules */
+import java.util.ArrayList;
 import java.util.List;
 
 /* local modules */
@@ -26,7 +27,10 @@ public class AgentLoadBalancerUtility {
     *   for a given ticket. This method will then check the number
     *   of tickets assigned to each agent and bump an agent to the
     *   bottom of the list if they have too many tickets assigned 
-    *   to them.
+    *   to them. To bump an agent to the bottom of the list, ther
+    *   overloaded agent is put into a temporary "overloaded" list.
+    *   At the end, that list is then merged to the back of the final
+    *   rankings list.
     */
     public List<AgentRanking> loadBalanceAgentRanking(List<AgentRanking> agentRankings) {
         
@@ -46,17 +50,27 @@ public class AgentLoadBalancerUtility {
         ticketLimit /= agentRankings.size();
         ticketLimit += 5;
 
-        for (int i = 0; i < agentRankings.size();) {
+        // two temporary lists will group over loaded and under loaded agents accordingly
+        List<AgentRanking> overLoadedAgents = new ArrayList<>();
+        List<AgentRanking> balancedAgentRankings = new ArrayList<>();
 
-            if (agentRankings.get(i).getNumberOfTickets() > ticketLimit) {
-                agentRankings.add(agentRankings.remove(i)); // bump to end of list
+        // splitting of the overloaded and underloaded agents
+        for (AgentRanking agentRanking: agentRankings) {
+
+            if (agentRanking.getNumberOfTickets() > ticketLimit) {
+                overLoadedAgents.add(agentRanking);
                 continue;
             }
 
-            i++;
+            balancedAgentRankings.add(agentRanking);
         }
         
-        return agentRankings;
+        // remerging of the list
+        for (AgentRanking agentRanking: overLoadedAgents) {
+            balancedAgentRankings.add(agentRanking);
+        }
+
+        return balancedAgentRankings;
     }
 }
 

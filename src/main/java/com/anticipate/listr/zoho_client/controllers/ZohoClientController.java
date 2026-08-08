@@ -99,6 +99,8 @@ public class ZohoClientController {
         return zohoClientService.getAgentTicketCounts(agentId);
     }
 
+
+
     /*----- ticket and embedding testing -----*/
 
     @GetMapping("/test-page")
@@ -132,7 +134,6 @@ public class ZohoClientController {
 
         // get similarity ranking
         List<AgentRanking> agentRankings = skillEmbeddingService.getSimilarityAgentRanking(ticket.getSubject());
-        System.out.println("[Zoho Controller] Most suitable agent ID for the ticket: " + agentRankings.get(0).getZohoId() + "\n");
 
         // load balance the ticket to the most suitable agent
         agentRankings = agentLoadBalancerUtility.loadBalanceAgentRanking(agentRankings);

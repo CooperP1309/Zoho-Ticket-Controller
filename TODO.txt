@@ -1,13 +1,19 @@
 ===== TODO =====
 
+ HIGH PRIORITY:
+ - Automate Oauth token fetch on startup
  - Add readme for repo usage
- - Edit Github description to mention RAG
  - Add startup script that handles sql container
  - Add dynamic Zoho API credentials to setup script
  - Add dynamic Zoho agent fill out for setup script
  - Add setup script validation to Zoho API credentials entry
+ - Agent ID validation on startup
  - Check for blank Zoho API Credentials during access token function in ZohoClientService.java
- - Implement persistent database for agent skills
- - Make start script to automate launching of sql server
- - Reimplement Agent class access via a "Repo" class
+
+ LOW PRIORITY:
+ - Edit Github description to mention RAG
  - Improve AgentSimilarityRanking Algorithm (apply set to compile straight from the for loop)
+ - Implement persistent database for agent skills
+ - Reimplement Agent class access via a "Repo" class
+ 
+ 

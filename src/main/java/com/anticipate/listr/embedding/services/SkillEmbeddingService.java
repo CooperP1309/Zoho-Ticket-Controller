@@ -85,7 +85,7 @@ public class SkillEmbeddingService {
             }
         }
 
-        System.out.println("[SkillEmbeddingService] Best agent ID for ticket subject '" + ticketSubject + "' is: " + bestAgentId + " with similarity: " + bestSimilarity);
+        System.out.println("\n[SkillEmbeddingService] Best agent ID for ticket subject '" + ticketSubject + "' is: " + bestAgentId + " with similarity: " + bestSimilarity);
 
         return bestAgentId;
     }

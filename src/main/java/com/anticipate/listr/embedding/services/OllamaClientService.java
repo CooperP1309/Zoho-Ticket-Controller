@@ -23,8 +23,8 @@ public class OllamaClientService {
 
     public float[] getEmbedding(String skill) {
         
-        //String ollamaURI = "http://192.168.1.124:11434/api/embed"; // HOME SERVER IP
-        String ollamaURI = "http://192.168.46.147:11434/api/embed";
+        String ollamaURI = "http://192.168.1.124:11434/api/embed"; // HOME SERVER IP
+        //String ollamaURI = "http://192.168.46.147:11434/api/embed";
         String requestBody = "{\"model\": \"nomic-embed-text\", \"input\": \"" + skill + "\"}";
 
         return restClient.post()

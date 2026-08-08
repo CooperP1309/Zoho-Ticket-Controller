@@ -135,10 +135,13 @@ public class ZohoClientService {
                 .retrieve()
                 .body(TicketCountList.class);
 
-        TicketCount ticketCount = response.getStatusType().get(0);
+        TicketCount ticketCountOpen = response.getStatusType().get(0);
+        TicketCount ticketCountOnHold = response.getStatusType().get(1);
 
-        System.out.println("[ZohoClientService] Agent traffic response: " + ticketCount.getCount());
+        int totalTickets = ticketCountOpen.getCount() + ticketCountOnHold.getCount();
 
-        return ticketCount.getCount();
+        System.out.println("[ZohoClientService] Ticket Count of agentID: " + assigneeId + " = " + totalTickets);
+
+        return totalTickets;
     }
 }
