@@ -106,15 +106,17 @@ public class ZohoClientService {
         ZohoTicketListResponse response =
 
             restClient.get()
-                .uri("https://desk.zoho.com.au/api/v1/tickets?sortBy=-createdTime&limit=1")
+                .uri("https://desk.zoho.com.au/api/v1/tickets?sortBy=-createdTime&limit=1&assignee=Unassigned")
                 .header(this.zohoAuthHeader.getAuthHeaderName(), this.zohoAuthHeader.getAuthHeaderValue())
                 .header(this.zohoAuthHeader.getOrgIdHeaderName(), this.zohoAuthHeader.getOrgIdHeaderValue())
                 .retrieve()
                 .body(ZohoTicketListResponse.class);
 
-        ZohoTicket ticket = response.getData().get(0);
+        if (response.getData().isEmpty()) {
+            return null;
+        }
 
-        return ticket;
+        return response.getData().get(0);
     }
 
     /*

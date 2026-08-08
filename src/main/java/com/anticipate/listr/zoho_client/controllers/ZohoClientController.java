@@ -224,6 +224,13 @@ public class ZohoClientController {
 
         // get the most recent open and unallocated ticket from Zoho Desk
         ZohoTicket ticket = zohoClientService.getMostRecentTicket();
+
+        if (ticket == null) {
+            System.out.println("[Zoho Controller] No unassigned tickets found\n");
+            model.addAttribute("noTicketFound", true);
+            return "prototype-page";
+        }
+
         System.out.println("[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n");
 
         // get similarity ranking

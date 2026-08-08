@@ -261,6 +261,13 @@
                 </form>
             </div>
 
+            <div class="panel" th:if="${noTicketFound}">
+                <h3>Routing Result</h3>
+                <div class="status-badge fail">
+                    <span class="dot"></span> No unassigned tickets found
+                </div>
+            </div>
+
             <div class="panel" th:if="${agentRankings != null}">
                 <h3>Routing Result</h3>
 
