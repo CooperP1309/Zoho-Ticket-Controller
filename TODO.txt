@@ -1,18 +1,19 @@
 ===== TODO =====
 
  HIGH PRIORITY:
- - Automate Oauth token fetch on startup
- - Add readme for repo usage
- - Add startup script that handles sql container
- - Add dynamic Zoho API credentials to setup script
- - Add dynamic Zoho agent fill out for setup script
- - Add setup script validation to Zoho API credentials entry
- - Agent ID validation on startup
- - Check for blank Zoho API Credentials during access token function in ZohoClientService.java
- - Automate setting of "api_domain" in auth header class when getting access token and calling Zoho API
+[X] Automate Oauth token fetch on startup
+[ ] Add startup script that handles sql container
+[ ] Dockerize Ollama deployment from startup
+[ ] Add readme for repo usage
+[ ] Add dynamic Zoho API credentials to setup script
+[ ] Add dynamic Zoho agent fill out for setup script
+[ ] Add setup script validation to Zoho API credentials entry
+[ ] Agent ID validation on startup
+[ ] Check for blank Zoho API Credentials during access token function in ZohoClientService.java
+[ ] Automate setting of "api_domain" in auth header class when getting access token and calling Zoho API
 
  LOW PRIORITY:
- - Edit Github description to mention RAG
- - Improve AgentSimilarityRanking Algorithm (apply set to compile straight from the for loop)
- - Implement persistent database for agent skills
- - Reimplement Agent class access via a "Repo" class
+[ ] Edit Github description to mention RAG
+[ ] Improve AgentSimilarityRanking Algorithm (apply set to compile straight from the for loop)
+[ ] Implement persistent database for agent skills
+[ ] Reimplement Agent class access via a "Repo" class
