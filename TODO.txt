@@ -9,28 +9,10 @@
  - Add setup script validation to Zoho API credentials entry
  - Agent ID validation on startup
  - Check for blank Zoho API Credentials during access token function in ZohoClientService.java
+ - Automate setting of "api_domain" in auth header class when getting access token and calling Zoho API
 
  LOW PRIORITY:
  - Edit Github description to mention RAG
  - Improve AgentSimilarityRanking Algorithm (apply set to compile straight from the for loop)
  - Implement persistent database for agent skills
  - Reimplement Agent class access via a "Repo" class
-
-
-(Heading) How Tickets are Decided
-
-When out of testing phase, the system will automatically pick 
-the top agent on the table. I need your help to provide feedback
-on the algorithm. I.e. report if it made bad choices.
-
-The algorithm determines which agent has the most relevant skills
-to the ticket. This is reflected as the "SIMILARITY" score.
-
-But before allocating the ticket to that person, it will check ticket 
-counts and determine if that agent is overloaded. In which case, they'll 
-be bumped down to the bottom of the list.
-
-** DISCLAIMER ** 
-
-How the system considers someone as "overloaded" is completely up for
-discussion. This is just a prototype.

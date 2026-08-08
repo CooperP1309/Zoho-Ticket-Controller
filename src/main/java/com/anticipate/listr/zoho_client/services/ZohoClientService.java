@@ -40,6 +40,8 @@ public class ZohoClientService {
         this.tokenHost = tokenHost;
         this.zohoAuthHeader = new ZohoAuthHeader();
         this.zohoAuthHeader.setOrgId(orgId);
+
+        getZohoAccessToken();
     }
 
     /*
@@ -62,10 +64,23 @@ public class ZohoClientService {
 
         // NOTE: access token set seperately to not overwrite the zsoid written during constructor
         this.zohoAuthHeader.setAccessToken(tokenResponse.getAccessToken());
+        this.zohoAuthHeader.setExpiryTime(tokenResponse.getExpiresIn());
 
         return "RESULTING HEADERS FROM ZOHO AUTH CLASS:\n" +
                 this.zohoAuthHeader.getAuthHeaderName() + ": " + this.zohoAuthHeader.getAuthHeaderValue() + "\n" +
                 this.zohoAuthHeader.getOrgIdHeaderName() + ": " + this.zohoAuthHeader.getOrgIdHeaderValue();
+    }
+
+    /*
+    *   Ensures the access token is valid
+    *
+    *   Refreshes the access token if it has expired before
+    *   it is used to make a request against the Zoho Desk API.
+    */
+    private void ensureValidAccessToken() {
+        if (this.zohoAuthHeader.isExpired()) {
+            getZohoAccessToken();
+        }
     }
 
     /*
@@ -86,6 +101,8 @@ public class ZohoClientService {
     *   Zoho Desk ticket queue. DOESN'T deserialize response.
     */
     public String useZohoAccessToken() {
+        ensureValidAccessToken();
+
         return restClient.get()
                 .uri("https://desk.zoho.com.au/api/v1/tickets?sortBy=-createdTime&limit=1")
                 .header(this.zohoAuthHeader.getAuthHeaderName(), this.zohoAuthHeader.getAuthHeaderValue())
@@ -103,6 +120,8 @@ public class ZohoClientService {
     *   deserialized into a ZohoTicket object.
     */
     public ZohoTicket getMostRecentTicket() {
+        ensureValidAccessToken();
+
         ZohoTicketListResponse response =
 
             restClient.get()
@@ -127,6 +146,7 @@ public class ZohoClientService {
     *   returns that agents ticket count for each status type.
     */
     public int getAgentTicketCounts(String assigneeId) {
+        ensureValidAccessToken();
 
         TicketCountList response =
 
