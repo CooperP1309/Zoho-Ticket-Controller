@@ -116,17 +116,23 @@
 
         .result-row {
             display: flex;
-            justify-content: space-between;
+            align-items: baseline;
+            gap: 1rem;
             padding: 0.4rem 0;
             border-bottom: 1px solid var(--border);
             font-size: 0.9rem;
         }
 
-        .result-row:last-child {
+        .ticket-info {
+            margin-bottom: 1.25rem;
+        }
+
+        .ticket-info .result-row:last-child {
             border-bottom: none;
         }
 
         .result-row span:first-child {
+            flex: 0 0 5rem;
             color: var(--muted);
         }
 
@@ -258,6 +264,17 @@
             <div class="panel" th:if="${agentRankings != null}">
                 <h3>Routing Result</h3>
 
+                <div class="ticket-info">
+                    <div class="result-row">
+                        <span>Ticket #</span>
+                        <span th:text="${ticket.ticketNumber}">0</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Subject</span>
+                        <span th:text="${ticket.subject}">Ticket Subject</span>
+                    </div>
+                </div>
+
                 <div class="status-badge fail" th:if="${agentRankings.isEmpty()}">
                     <span class="dot"></span> No suitable agent found
                 </div>
@@ -290,7 +307,7 @@
             </div>
 
             <div class="panel info-panel">
-                <h3>How Tickets are Decided</h3>
+                <h3>How Rankings are Decided</h3>
                 <p>
                     When out of testing phase, the system will automatically allocate
                     the ticket to the agent at top of the table. 
