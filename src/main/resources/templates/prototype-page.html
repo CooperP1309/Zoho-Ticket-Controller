@@ -200,6 +200,39 @@
             border-radius: 50%;
             background: currentColor;
         }
+
+        .info-panel p {
+            color: var(--text);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 0 0 0.9rem;
+        }
+
+        .info-panel p:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .info-panel .disclaimer {
+            margin-top: 1.2rem;
+            padding: 0.9rem 1rem;
+            background: rgba(255, 92, 92, 0.08);
+            border: 1px solid rgba(255, 92, 92, 0.3);
+            border-radius: 8px;
+        }
+
+        .info-panel .disclaimer strong {
+            display: block;
+            color: var(--fail);
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-panel .disclaimer p {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -214,14 +247,11 @@
             <!-- 3. Conditional rendering (evaluates boolean conditions) -->
             <div class="admin-tag" th:if="${userRole == 'ADMIN'}">Admin Control Panel Activated</div>
 
-            <!-- 4. Form Handling and Data Binding -->
+            <!-- 4. Fetches and routes the most recent open, unallocated ticket -->
             <div class="panel">
-                <h3>Submit Test Ticket</h3>
-                <form th:action="@{/zoho/test-page}" th:object="${ticket}" method="post">
-                    <label for="subject">Ticket Subject</label>
-                    <!-- th:field binds inputs to the Java object property -->
-                    <input type="text" id="subject" th:field="*{subject}" placeholder="e.g. Cannot access shared drive" />
-                    <button type="submit">Send</button>
+                <h3>Fetch Live Ticket</h3>
+                <form th:action="@{/zoho/prototype-page}" method="post">
+                    <button type="submit">Fetch &amp; Route Next Ticket</button>
                 </form>
             </div>
 
@@ -256,6 +286,33 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <div class="panel info-panel">
+                <h3>How Tickets are Decided</h3>
+                <p>
+                    When out of testing phase, the system will automatically allocate
+                    the ticket to the agent at top of the table. 
+                    
+                    I need your help to provide feedback on the
+                    algorithm &mdash; i.e. report if it made bad choices.
+                </p>
+                <p>
+                    The algorithm determines which agent has the most relevant skills to
+                    the ticket. This is reflected as the <strong>SIMILARITY</strong> score.
+                </p>
+                <p>
+                    But before allocating the ticket to that person, it will check ticket
+                    counts and determine if that agent is overloaded. In which case,
+                    they'll be bumped down to the bottom of the list.
+                </p>
+                <div class="disclaimer">
+                    <strong>Disclaimer</strong>
+                    <p>
+                        How the system considers someone as "overloaded" is completely up
+                        for discussion. This is just a prototype.
+                    </p>
                 </div>
             </div>
         </main>

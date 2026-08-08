@@ -193,4 +193,49 @@ public class ZohoClientController {
 
         return ticket.toString();
     }
+
+
+    /*----- prototype testing endpoints -----*/
+
+    @GetMapping("/prototype-page")
+    /*  
+    *   Displays prototype page 
+    *
+    *   When called, returns html for a prototype form.
+    *   This form allows the testing of the entire system.
+    *   Only falling short of actually allocating tickets.
+    */
+    public String showPrototypeForm(Model model) {
+        model.addAttribute("ticket", new ZohoTicket());
+        return "prototype-page";
+    }
+
+    @PostMapping("/prototype-page")
+    /*  
+    *   Triggers a prototype pipeline
+    *   
+    *   This function is called when the above prototype form is
+    *   submitted. The most recent *OPEN* and *UNALLOCATED* ticket 
+    *   is grabbed. The submitted ticket is sent through
+    *   the Zoho Ticket Controller pipeline, only stopping
+    *   short of actually updating the ticket in Zoho Desk. 
+    */
+    public String submitPrototypeTicket(Model model) {
+
+        // get the most recent open and unallocated ticket from Zoho Desk
+        ZohoTicket ticket = zohoClientService.getMostRecentTicket();
+        System.out.println("[Zoho Controller] Most recent ticket description and number: " + ticket.getSubject() + ", " + ticket.getTicketNumber() + "\n");
+
+        // get similarity ranking
+        List<AgentRanking> agentRankings = skillEmbeddingService.getSimilarityAgentRanking(ticket.getSubject());
+
+        // load balance the ticket to the most suitable agent
+        agentRankings = agentLoadBalancerUtility.loadBalanceAgentRanking(agentRankings);
+        System.out.println("[Zoho Controller] Most suitable agent ID for the ticket after load balancing: " + agentRankings.get(0).getZohoId() + "\n");
+
+        model.addAttribute("ticket", ticket);
+        model.addAttribute("agentRankings", agentRankings);
+
+        return "prototype-page";
+    }
 }
