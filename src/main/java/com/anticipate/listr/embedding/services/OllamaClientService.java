@@ -10,7 +10,8 @@ import tools.jackson.databind.ObjectMapper;
 
 /* local modules */
 import com.anticipate.listr.embedding.entities.Embeddings;
-import com.anticipate.listr.embedding.entities.EmbeddedSkill; 
+import com.anticipate.listr.embedding.entities.EmbeddedSkill;
+import com.anticipate.listr.zoho_client.utilities.AgentLoadBalancerUtility;
 
 @Service
 public class OllamaClientService {
@@ -26,7 +27,7 @@ public class OllamaClientService {
         String ollamaURI = "http://localhost:11434/api/embed";
         //String ollamaURI = "http://192.168.1.124:11434/api/embed"; // HOME SERVER IP
         //String ollamaURI = "http://192.168.46.147:11434/api/embed";
-        String requestBody = "{\"model\": \"nomic-embed-text\", \"input\": \"" + skill + "\"}";
+        String requestBody = "{\"model\": \"nomic-embed-text\", \"input\": \"" + AgentLoadBalancerUtility.escapeJsonString(skill) + "\"}";
 
         return restClient.post()
             .uri(ollamaURI)
