@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"></html>
+<html lang="en" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"></html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+</head>
+<body>
+
+    <h1 th:text="${username != null} ? |Welcome back, ${username}| : 'Welcome back'">Welcome back</h1>
+    <p>This is a super simple website built with basic HTML. And yes, this isn't the landing page.</p>
+
+    <div sec:authorize="hasRole('ADMIN')">
+        <hr>
+            <p>
+                <a th:href="@{/admin/dashboard}">Admin Dashboard</a>
+            </p>
+        <hr>
+    </div>
+
+</body>
+</html>
