@@ -53,6 +53,8 @@ public class SecurityConfiguration
                 // keeping js matchers incase we want I need them for a future project
                 .requestMatchers("/js/**", "/css/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
                 .requestMatchers("/", "/landing-page").permitAll()
+                // TEMPORARY: Ollama embedding test endpoint, remove after testing
+                .requestMatchers("/test/embedding").permitAll()
                 .requestMatchers(
                     "/auth/login", "/auth/login-page",
                     "/auth/register", "/auth/register-page",

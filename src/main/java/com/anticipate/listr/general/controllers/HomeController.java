@@ -6,17 +6,24 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.ui.Model;
 import lombok.extern.slf4j.Slf4j;
+
+import com.anticipate.listr.embedding.services.OllamaClientService;
 
 @RequestMapping("/")
 @Controller
 @Slf4j
-public class HomeController 
+public class HomeController
 {
 
-    public HomeController() 
+    private final OllamaClientService ollamaClientService;
+
+    public HomeController(OllamaClientService ollamaClientService)
     {
+        this.ollamaClientService = ollamaClientService;
     }
     
     @GetMapping("/")
@@ -76,5 +83,18 @@ public class HomeController
         }
 
         return "home-page";
-    }    
+    }
+
+    @GetMapping("test/embedding")
+    @ResponseBody
+    /*  TEMPORARY test endpoint for the Ollama embedding client
+     *
+     *  Public (see SecurityConfiguration) so it can be hit from Postman, e.g.
+     *  GET /test/embedding?text=java developer
+     *  Remove this endpoint and its permitAll entry once testing is done.
+     */
+    public float[] testEmbedding(@RequestParam String text)
+    {
+        return ollamaClientService.getEmbedding(text);
+    }
 }
