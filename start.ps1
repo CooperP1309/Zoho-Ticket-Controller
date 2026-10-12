@@ -53,6 +53,14 @@ if (-not $db_password) {
     exit 1
 }
 
+$ollama_container = Get-Prop 'ollama.container.name'
+if (-not $ollama_container) {
+    Write-Error "'ollama.container.name' is not set in application.properties. Re-run .\setup.ps1 (or add the line manually)."
+    exit 1
+}
+$ollama_model = Get-Prop 'ollama.embedding.model'
+if (-not $ollama_model) { $ollama_model = 'nomic-embed-text' }
+
 $db_url      = Get-Prop 'spring.datasource.url'
 $db_hostport = ($db_url -replace '^jdbc:mysql://', '') -replace '/.*', ''
 $db_port     = $db_hostport -replace '^.*:', ''
@@ -107,12 +115,66 @@ for ($i = 1; $i -le 60; $i++) {
     Start-Sleep -Seconds 2
 }
 
+# ---- Ensure Ollama container is running ----
+Write-Host
+$isRunning = docker ps    --format '{{.Names}}' 2>$null | Where-Object { $_ -eq $ollama_container }
+$exists    = docker ps -a --format '{{.Names}}' 2>$null | Where-Object { $_ -eq $ollama_container }
+
+if ($isRunning) {
+    Write-Host "Ollama container '$ollama_container' is already running."
+} elseif ($exists) {
+    Write-Host "Starting existing Ollama container '$ollama_container'..."
+    docker start $ollama_container | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to start container '$ollama_container'."
+        exit 1
+    }
+} else {
+    Write-Error "Ollama container '$ollama_container' does not exist. Run .\setup.ps1 to create it."
+    exit 1
+}
+
+# ---- Wait for Ollama and ensure the embedding model is present ----
+Write-Host
+Write-Host "Waiting for Ollama to start..."
+
+for ($i = 1; $i -le 30; $i++) {
+    $running = docker ps --format '{{.Names}}' 2>$null | Where-Object { $_ -eq $ollama_container }
+    if (-not $running) {
+        Write-Error "Ollama container '$ollama_container' exited during startup."
+        docker logs --tail 20 $ollama_container 2>&1 | Write-Host
+        exit 1
+    }
+    docker exec $ollama_container ollama list 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Ollama is ready."
+        break
+    }
+    if ($i -eq 30) {
+        Write-Error "Ollama did not become ready within 60s."
+        docker logs --tail 20 $ollama_container 2>&1 | Write-Host
+        exit 1
+    }
+    Start-Sleep -Seconds 2
+}
+
+docker exec $ollama_container ollama show $ollama_model 2>$null | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Embedding model '$ollama_model' is missing, pulling it..."
+    docker exec $ollama_container ollama pull $ollama_model
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to pull '$ollama_model'."
+        exit 1
+    }
+}
+
 # ---- Launch Spring Boot ----
 Write-Host
 Write-Host "--------- Launching Spring Boot ---------"
 Write-Host
 Write-Host "Container:  $db_container"
 if ($db_port) { Write-Host "MySQL port: $db_port" }
+Write-Host "Ollama:     $ollama_container ($ollama_model)"
 Write-Host
 
 Set-Location $ScriptDir

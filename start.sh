@@ -4,9 +4,10 @@
 #   1. ensures the Docker daemon is running (starting it if possible)
 #   2. ensures the MySQL container from application.properties is running
 #   3. waits until MySQL actually accepts connections
-#   4. hands off to ./mvnw spring-boot:run
+#   4. ensures the Ollama container is running and the embedding model is pulled
+#   5. hands off to ./mvnw spring-boot:run
 #
-# All database details are read from src/main/resources/application.properties,
+# All database and Ollama details are read from src/main/resources/application.properties,
 # which is written by ./setup.sh.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -65,6 +66,12 @@ db_password=$(prop 'spring.datasource.password') || {
     echo "Error: 'spring.datasource.password' is not set in application.properties." >&2
     exit 1
 }
+ollama_container=$(prop 'ollama.container.name') || {
+    echo "Error: 'ollama.container.name' is not set in application.properties." >&2
+    echo "       Re-run ./setup.sh (or add the line manually)." >&2
+    exit 1
+}
+ollama_model=$(prop 'ollama.embedding.model') || ollama_model="nomic-embed-text"
 db_url=$(prop 'spring.datasource.url')
 db_hostport=${db_url#*://}
 db_hostport=${db_hostport%%/*}
@@ -119,6 +126,53 @@ for ((i = 1; i <= 60; i++)); do
     sleep 2
 done
 
+# --- ensure the Ollama container is running -----------------------------
+
+echo
+if docker ps --format '{{.Names}}' | grep -Fxq -- "$ollama_container"; then
+    echo "Ollama container '$ollama_container' is already running."
+elif docker ps -a --format '{{.Names}}' | grep -Fxq -- "$ollama_container"; then
+    echo "Starting existing Ollama container '$ollama_container'..."
+    if ! docker start "$ollama_container" >/dev/null; then
+        echo "Error: failed to start container '$ollama_container'." >&2
+        exit 1
+    fi
+else
+    echo "Error: Ollama container '$ollama_container' does not exist." >&2
+    echo "       Run ./setup.sh to create it." >&2
+    exit 1
+fi
+
+# --- wait for Ollama and ensure the embedding model is present ----------
+
+echo
+echo "Waiting for Ollama to start..."
+for ((i = 1; i <= 30; i++)); do
+    if ! docker ps --format '{{.Names}}' | grep -Fxq -- "$ollama_container"; then
+        echo "Error: Ollama container '$ollama_container' exited during startup." >&2
+        docker logs --tail 20 "$ollama_container" >&2
+        exit 1
+    fi
+    if docker exec "$ollama_container" ollama list >/dev/null 2>&1; then
+        echo "Ollama is ready."
+        break
+    fi
+    if [[ $i -eq 30 ]]; then
+        echo "Error: Ollama did not become ready within 60s." >&2
+        docker logs --tail 20 "$ollama_container" >&2
+        exit 1
+    fi
+    sleep 2
+done
+
+if ! docker exec "$ollama_container" ollama show "$ollama_model" >/dev/null 2>&1; then
+    echo "Embedding model '$ollama_model' is missing, pulling it..."
+    if ! docker exec "$ollama_container" ollama pull "$ollama_model"; then
+        echo "Error: failed to pull '$ollama_model'." >&2
+        exit 1
+    fi
+fi
+
 # --- start the Spring server -------------------------------------------
 
 echo
@@ -126,5 +180,6 @@ echo "--------- Launching Spring Boot ---------"
 echo
 echo "Container:  $db_container"
 [[ -n $db_port ]] && echo "MySQL port: $db_port"
+echo "Ollama:     $ollama_container ($ollama_model)"
 echo
 exec ./mvnw spring-boot:run

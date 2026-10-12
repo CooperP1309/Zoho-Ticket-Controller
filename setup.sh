@@ -200,10 +200,27 @@ while true; do
         echo
     fi
 done
+echo
+echo "Enter your Ollama container name (WARNING: Overwrites existing container with same name):"
+echo
+read -rp "" ollama_container_name
+ollama_model="nomic-embed-text"
+echo
+echo "Ollama can use an NVIDIA GPU if the NVIDIA Container Toolkit is installed."
+echo "The embedding model is small, so CPU-only is fine if you are unsure."
+while true; do
+    read -rp "Run Ollama with GPU support? (y/n): " ollama_gpu_choice
+    case "$ollama_gpu_choice" in
+        [Yy]* ) ollama_gpu=true; break;;
+        [Nn]* ) ollama_gpu=false; break;;
+        * ) echo "Please answer 'y' or 'n'." >&2;;
+    esac
+done
 clear
 echo
 server_port=$(resolve_port "Spring server" 8005) || exit 1
 db_port=$(resolve_port "MySQL container host" 3307) || exit 1
+ollama_port=$(resolve_port "Ollama container host" 11434) || exit 1
 
 clear
 echo "--------- SMTP / Mail Setup ---------"
@@ -312,6 +329,10 @@ echo "--------- Configuration Summary ---------"
 printf '  %-26s %s\n' "Database container name:" "$db_container_name"
 printf '  %-26s %s\n' "Spring server port:" "$server_port"
 printf '  %-26s %s\n' "MySQL host port:" "$db_port"
+printf '  %-26s %s\n' "Ollama container name:" "$ollama_container_name"
+printf '  %-26s %s\n' "Ollama host port:" "$ollama_port"
+printf '  %-26s %s\n' "Ollama GPU support:" "$ollama_gpu"
+printf '  %-26s %s\n' "Embedding model:" "$ollama_model"
 printf '  %-26s %s\n' "SMTP host:" "$smtp_host"
 printf '  %-26s %s\n' "SMTP port:" "$smtp_port"
 printf '  %-26s %s\n' "SMTP username:" "$smtp_username"
@@ -348,6 +369,12 @@ db.container.name=$db_container_name
 ## Hibernate properties
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.open-in-view=false
+
+# Ollama / Embeddings
+# Name of the Docker container running Ollama (used by start.sh)
+ollama.container.name=$ollama_container_name
+ollama.base-url=http://localhost:$ollama_port
+ollama.embedding.model=$ollama_model
 
 # JWT Configuration
 security.jwt.secret-key=$jwt_secret
@@ -396,6 +423,28 @@ case "$deploy_confirm" in
   ;;
 esac
 
+# deploying Ollama container
+echo
+echo "An Ollama Docker container is about to be deployed on port $ollama_port."
+read -rp "Would you like to proceed? (y/n): " ollama_deploy_confirm
+case "$ollama_deploy_confirm" in
+[Yy]* )
+    if docker ps -a --format '{{.Names}}' | grep -Fxq -- "$ollama_container_name"; then
+        docker rm -f "$ollama_container_name"
+    fi
+    gpu_args=()
+    [[ $ollama_gpu == true ]] && gpu_args=(--gpus all)
+    # Bound to localhost only: the Ollama API has no authentication.
+    # The named volume keeps pulled models across container re-creation.
+    if ! docker run -d "${gpu_args[@]}" -v "${ollama_container_name}_models":/root/.ollama \
+        --name "$ollama_container_name" -p 127.0.0.1:"$ollama_port":11434 ollama/ollama; then
+        echo "Error: failed to start the Ollama container." >&2
+        [[ $ollama_gpu == true ]] && echo "       If GPU support is unavailable, re-run setup and answer 'n'." >&2
+        exit 1
+    fi
+  ;;
+esac
+
 # testing deployment of the containers
 clear
 echo "--------- Springboot Setup ---------"
@@ -424,11 +473,40 @@ for i in $(seq 1 60); do
     sleep 2
 done
 
+echo "Waiting for Ollama to start..."
+echo
+
+for i in $(seq 1 30); do
+    if ! docker ps --format '{{.Names}}' | grep -Fxq -- "$ollama_container_name"; then
+        echo "Error: Ollama container exited during startup." >&2
+        docker logs --tail 20 "$ollama_container_name" >&2
+        exit 1
+    fi
+    if docker exec "$ollama_container_name" ollama list >/dev/null 2>&1; then
+        echo "Ollama is ready."
+        echo
+        break
+    fi
+    if [[ $i -eq 30 ]]; then
+        echo "Error: Ollama did not become ready within 60s." >&2
+        docker logs --tail 20 "$ollama_container_name" >&2
+        exit 1
+    fi
+    sleep 2
+done
+
+echo "Pulling embedding model '$ollama_model' (~275MB on first run)..."
+if ! docker exec "$ollama_container_name" ollama pull "$ollama_model"; then
+    echo "Error: failed to pull '$ollama_model'." >&2
+    exit 1
+fi
+
 clear
 echo
 echo "--------- Setup Complete ---------"
 echo "Spring server port: $server_port"
 echo "MySQL host port:    $db_port"
+echo "Ollama host port:   $ollama_port ($ollama_model)"
 echo "SMTP host:          $smtp_host:$smtp_port"
 echo
 echo "To start the server, run the following command:"

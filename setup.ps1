@@ -179,11 +179,32 @@ while ($true) {
     Write-Host
 }
 
+# ---- Ollama container ----
+Write-Host
+Write-Host "Enter your Ollama container name (WARNING: Overwrites existing container with same name):"
+Write-Host
+$ollama_container_name = Read-Host
+$ollama_model = 'nomic-embed-text'
+Write-Host
+Write-Host "Ollama can use an NVIDIA GPU if the NVIDIA Container Toolkit is installed."
+Write-Host "The embedding model is small, so CPU-only is fine if you are unsure."
+$ollama_gpu = 'false'
+while ($true) {
+    $gpuChoice = Read-Host "Run Ollama with GPU support? (y/n)"
+    switch -Wildcard ($gpuChoice.ToLower()) {
+        'y*' { $ollama_gpu = 'true';  break }
+        'n*' { $ollama_gpu = 'false'; break }
+        default { Write-Host "Please answer 'y' or 'n'." -ForegroundColor Red; continue }
+    }
+    break
+}
+
 # ---- Port resolution ----
 Clear-Host
 Write-Host
-$server_port = Resolve-Port "Spring server"        8005
-$db_port     = Resolve-Port "MySQL container host" 3307
+$server_port = Resolve-Port "Spring server"         8005
+$db_port     = Resolve-Port "MySQL container host"  3307
+$ollama_port = Resolve-Port "Ollama container host" 11434
 
 # ---- SMTP setup ----
 Clear-Host
@@ -299,6 +320,10 @@ Write-Host "--------- Configuration Summary ---------"
 Write-Host ("  {0,-26} {1}" -f "Database container name:", $db_container_name)
 Write-Host ("  {0,-26} {1}" -f "Spring server port:",      $server_port)
 Write-Host ("  {0,-26} {1}" -f "MySQL host port:",         $db_port)
+Write-Host ("  {0,-26} {1}" -f "Ollama container name:",   $ollama_container_name)
+Write-Host ("  {0,-26} {1}" -f "Ollama host port:",        $ollama_port)
+Write-Host ("  {0,-26} {1}" -f "Ollama GPU support:",      $ollama_gpu)
+Write-Host ("  {0,-26} {1}" -f "Embedding model:",         $ollama_model)
 Write-Host ("  {0,-26} {1}" -f "SMTP host:",               $smtp_host)
 Write-Host ("  {0,-26} {1}" -f "SMTP port:",               $smtp_port)
 Write-Host ("  {0,-26} {1}" -f "SMTP username:",           $smtp_username)
@@ -343,6 +368,12 @@ db.container.name=$db_container_name
 ## Hibernate properties
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.open-in-view=false
+
+# Ollama / Embeddings
+# Name of the Docker container running Ollama (used by start.ps1)
+ollama.container.name=$ollama_container_name
+ollama.base-url=http://localhost:$ollama_port
+ollama.embedding.model=$ollama_model
 
 # JWT Configuration
 security.jwt.secret-key=$jwt_secret
@@ -392,6 +423,28 @@ if ($deploy_confirm -match '^[Yy]') {
         mysql:8.0
 }
 
+# ---- Deploy Ollama container ----
+Write-Host
+Write-Host "An Ollama Docker container is about to be deployed on port $ollama_port."
+$ollama_deploy_confirm = Read-Host "Would you like to proceed? (y/n)"
+if ($ollama_deploy_confirm -match '^[Yy]') {
+    $exists = docker ps -a --format '{{.Names}}' 2>$null | Where-Object { $_ -eq $ollama_container_name }
+    if ($exists) { docker rm -f $ollama_container_name | Out-Null }
+    $gpuArgs = if ($ollama_gpu -eq 'true') { @('--gpus', 'all') } else { @() }
+    # Bound to localhost only: the Ollama API has no authentication.
+    # The named volume keeps pulled models across container re-creation.
+    docker run -d @gpuArgs `
+        -v "${ollama_container_name}_models:/root/.ollama" `
+        --name $ollama_container_name `
+        -p "127.0.0.1:${ollama_port}:11434" `
+        ollama/ollama
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to start the Ollama container."
+        if ($ollama_gpu -eq 'true') { Write-Host "If GPU support is unavailable, re-run setup and answer 'n'." -ForegroundColor Yellow }
+        exit 1
+    }
+}
+
 # ---- Wait for MySQL ----
 Clear-Host
 Write-Host "--------- Springboot Setup ---------"
@@ -421,12 +474,46 @@ for ($i = 1; $i -le 60; $i++) {
     Start-Sleep -Seconds 2
 }
 
+# ---- Wait for Ollama ----
+Write-Host "Waiting for Ollama to start..."
+Write-Host
+
+for ($i = 1; $i -le 30; $i++) {
+    $running = docker ps --format '{{.Names}}' 2>$null | Where-Object { $_ -eq $ollama_container_name }
+    if (-not $running) {
+        Write-Error "Ollama container exited during startup."
+        docker logs --tail 20 $ollama_container_name 2>&1 | Write-Host
+        exit 1
+    }
+    docker exec $ollama_container_name ollama list 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Ollama is ready."
+        Write-Host
+        break
+    }
+    if ($i -eq 30) {
+        Write-Error "Ollama did not become ready within 60s."
+        docker logs --tail 20 $ollama_container_name 2>&1 | Write-Host
+        exit 1
+    }
+    Start-Sleep -Seconds 2
+}
+
+# ---- Pull embedding model ----
+Write-Host "Pulling embedding model '$ollama_model' (~275MB on first run)..."
+docker exec $ollama_container_name ollama pull $ollama_model
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Failed to pull '$ollama_model'."
+    exit 1
+}
+
 # ---- Done ----
 Clear-Host
 Write-Host
 Write-Host "--------- Setup Complete ---------"
 Write-Host "Spring server port: $server_port"
 Write-Host "MySQL host port:    $db_port"
+Write-Host "Ollama host port:   $ollama_port ($ollama_model)"
 Write-Host "SMTP host:          ${smtp_host}:${smtp_port}"
 Write-Host
 Write-Host "To start the server, run the following command:"
